@@ -1,20 +1,21 @@
 <template>
-<img class="logo" src="../auth/bubbleFront.png"/>
- <h2 class="titre"> Login Page</h2>
- <div class="login">
+ <img class="logo" src="../auth/bubbleFront.png"/>
+ <h2 class="titre"> Register Page</h2>
+ <div class="register">
+    <input type="text" v-model="name" placeholder="enter name">
     <input type="text" v-model="email" placeholder="enter email">
     <input type="password" v-model="password" placeholder="enter password">
-    <button v-on:click="Login">Login</button>
-    <p class="link">
-        <RouterLink to="/RegisterView">Register</RouterLink>
-    </p>
-
+    <button v-on:click="register">Register</button>
  </div>
+
+ <p class="link">
+        <RouterLink to="/RegisterView">Login</RouterLink>
+ </p>
 </template>
 
 <script>
 export default {
-    name: 'LoginView'
+    name: 'RegisterView'
 }
 </script>
 
@@ -28,7 +29,7 @@ export default {
     position: relative;
     margin-left: 180px;
 }
-.login input {
+.register input {
     width: 300px;
     height: 40px;
     padding-left: 20px;
@@ -38,7 +39,7 @@ export default {
     margin-left: auto;
     border: 1px solid skyblue;
 }
-.login button {
+.register button {
     background-color: #154968;
     position: relative;
     margin-left: 80px;
