@@ -1,15 +1,69 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8">
-    <link rel="icon" href="/favicon.ico">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Vite App</title>
-    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
-  </head>
-  <body>
-    <div id="app"></div>
-    <h1>hello</h1>
-    <script type="module" src="/src/main.js"></script>
-  </body>
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <link rel="apple-touch-icon" href="/src/assets/img/apple-icon.png">
+  <link rel="icon" type="image/png" href="/src/assets/img/favicon.png">
+  <title>
+    Bubbles App
+  </title>
+  <link rel="stylesheet" type="text/css"
+    href="https://fonts.googleapis.com/css?family=Roboto:300,400,500,700,900|Roboto+Slab:400,700" />
+  <script src="https://kit.fontawesome.com/42d5adcbca.js" crossorigin="anonymous"></script>
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+  <!-- <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script> -->
+</head>
+
+<body class="g-sidenav-show bg-gray-200">
+
+  <div id="app"></div>
+  <script type="module" src="/src/main.js"></script>
+
+  <script src="/src/assets/js/core/popper.min.js"></script>
+  <script src="/src/assets/js/core/bootstrap.min.js"></script>
+   <script src="/src/assets/js/plugins/perfect-scrollbar.min.js"></script>
+  <script src="/src/assets/js/plugins/smooth-scrollbar.min.js"></script>
+  <script src="/src/assets/js/material-dashboard.min.js"></script>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.slim.min.js"
+    integrity="sha256-kmHvs0B+OpCW5GVHUNjv9rOmY0IvSIRcf7zGUDTDQM8=" crossorigin="anonymous"></script>
+  <script>
+
+    $(document).on('click', '#setting', () => {
+      $("#setting-display").addClass('p show')
+    })
+
+
+    $(document).on('click', '#setting-close', () => {
+      $("#setting-display").removeClass('p show')
+    })
+
+    /** 
+      En format mobile, ce code permet de réduire le menu
+      de navigation, quand l'utilisateur clique sur l'icon x.
+    **/
+    $(document).on('click', '#iconSidenav', () => {
+      $(body).removeClass('g-sidenav-pinned')
+      $('#sidenav-main').removeClass('ps bg-white')
+    })
+    
+    /** 
+      En format mobile, ce code permet d'afficher et de réduire le menu de navigation, 
+      quand l'utilisateur clique sur les trois barres.
+    **/
+    $(document).on('click', '#mobile-hambuger', () => {
+      if ($(body).attr("class") == "g-sidenav-show bg-gray-200") {
+        $(body).addClass('g-sidenav-pinned')
+        $('#sidenav-main').addClass('ps bg-white')
+      } else {
+        $(body).removeClass('g-sidenav-pinned')
+        $('#sidenav-main').removeClass('ps bg-white')
+      }
+    })
+  </script>
+</body>
+
 </html>
