@@ -1,10 +1,9 @@
-<script>
-
+<script setup>
+  import LateralePage from '@/views/partials/LateralePage.vue'
 </script>
 
 <template>
-    <div class="container py-4">
-      <h4>Modèles de diagrammes</h4>
+  <h4>Modèles de diagrammes</h4>
       <div class="row mt-4">
         <div class="col-lg-4 col-md-6 mt-4 mb-4">
           <div class="card z-index-2 ">
@@ -75,5 +74,5 @@
             </button>
           </div>
       </div>
-    </div>
+      <laterale-page></laterale-page>
 </template>

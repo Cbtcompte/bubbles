@@ -5721,6 +5721,10 @@ fieldset:disabled .btn {
   --bs-pagination-border-radius: 0.125rem;
 }
 
+.badge-color-active {
+  border-color: #344767;
+}
+
 .badge {
   --bs-badge-padding-x: 0.9em;
   --bs-badge-padding-y: 0.55em;
@@ -22773,7 +22777,7 @@ label,
 }
 
 .bg-gradient-color {
-  background-image: linear-gradient(195deg, #5271ff 0%, #5271ff 100%);
+  background-color: #000080;
 }
 
 .bg-gradient-faded-primary {
