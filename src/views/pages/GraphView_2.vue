@@ -11,7 +11,7 @@ import ModalView from '@/components/tools/ModalView.vue'
 
 /**
  * 
- * Variable
+ * Variable 
 */
 const diagrammeName = ref('Diagramme à bulle')
 const switchTab = ref('parent')
@@ -26,7 +26,7 @@ const dataUse = ref([])
 const edgesUse = ref([])
 const edges = ref([])
 const modalTitle = ref()
-//const parentConfig = ref()
+const saveSymbol = ref()
 const data = ref([
     {
         id: 1,
@@ -303,7 +303,8 @@ const openModal = (modalTitre) => {
 }
 
 const createLinkBettweenData = () => {
-    data.value.forEach(element => {
+    edges.value, edgesUse.value = []
+    dataUse.value.forEach(element => {
         if (element.parent != null) {
             edges.value.push({
                 source: element.parent - 1,
@@ -327,7 +328,7 @@ const createLinkBettweenData = () => {
 const modifierBulleSpecifique = (key, item) => {
     if(item['id'] != item['parent']){
         dataUse.value[key] = item
-        console.log(dataUse.value[key])
+        data.value[key] = item
     }else{
         hasNotification.value = true
         messageNotification.value = "Une bulle ne peut pointer sur elle-même"
@@ -423,11 +424,27 @@ onMounted(() => {
         let boole = changeVisibility(element)
         if (boole) {
             edgesUse.value = edges.value
-            dataUse.value = data.value
+            //dataUse.value = data.value
+            dataUse.value.map((item, index) => {
+                item.symbol = saveSymbol[index].symbol
+                // if (item.parent == element.id) {
+                //     // saveSymbol.value.push({
+                //     //     key : index,
+                //     //     symbol : item.symbol,
+                //     //     parent : item.parent
+                //     // })
+                //     item.symbol = 'none'
+                // }
+            })
         } else {
             edgesUse.value = edges.value.filter(item => item.source !== (element.id - 1))
-            dataUse.value.map((item) => {
+            dataUse.value.map((item, index) => {
                 if (item.parent == element.id) {
+                    saveSymbol.value.push({
+                        key : index,
+                        symbol : item.symbol,
+                        parent : item.parent
+                    })
                     item.symbol = 'none'
                 }
             })
@@ -435,6 +452,11 @@ onMounted(() => {
     });
 
 })
+
+// const checkSaveSymbol = () => {
+//     saveSymbol.value.map((item, index) => {
+//         if()
+//     })
 
 </script>
 
@@ -588,7 +610,7 @@ onMounted(() => {
                                     <input type="text" :name="'libelle_'+key" id="libelle" v-model="item.name">
                                 </td>
                                 <td>
-                                    <input type="number" :name="'parent_'+key" id="parent" v-model="item.parent">
+                                    <input type="number" style="width: 20%;" :name="'parent_'+key" id="parent" v-model="item.parent">
                                 </td>
                                 <td>
                                     <button @click="modifierBulleSpecifique(key, item)" class="btn btn-sm btn-info">

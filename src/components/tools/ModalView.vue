@@ -13,7 +13,7 @@ const props = defineProps({
         <div class="row">
             <div class="col-md-4">
                 <!-- Modal -->
-                <div class="modal fade draggable" id="exampleModalLong" tabindex="-1" role="dialog"
+                <div class="modal fade" data-backdrop="static" data-keyboard="false" id="exampleModalLong" tabindex="-1" role="dialog"
                     aria-labelledby="exampleModalLongTitle" aria-hidden="true">
                     <div class="modal-dialog" :class="[props.tailleModalDialog]" role="document">
                         <div class="modal-content">

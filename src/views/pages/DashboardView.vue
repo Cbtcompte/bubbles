@@ -1,78 +1,47 @@
 <script setup>
-  import LateralePage from '@/views/partials/LateralePage.vue'
+import LateralePage from '@/views/partials/LateralePage.vue'
+import ModelDiagramme from '../../components/tools/ModelDiagramme.vue';
+import ModalView from '@/components/tools/ModalView.vue';
+import { ref } from 'vue'
+
+const modalTitle = ref()
+
+const openModal = (modalTitre) => {
+  modalTitle.value = modalTitre
+  // eslint-disable-next-line no-undef
+  $('#exampleModalLong').modal('show')
+}
 </script>
 
 <template>
   <h4>Modèles de diagrammes</h4>
-      <div class="row mt-4">
-        <div class="col-lg-4 col-md-6 mt-4 mb-4">
-          <div class="card z-index-2 ">
-            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
-              <div class="bg-gradient-primary shadow-primary border-radius-lg py-3 pe-1">
-                <div class="chart">
-                  <canvas id="chart-bars" class="chart-canvas" height="170"></canvas>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <h6 class="mb-0 ">Website Views</h6>
-              <p class="text-sm ">Last Campaign Performance</p>
-              <hr class="dark horizontal">
-              <div class="d-flex ">
-                <i class="material-icons text-sm my-auto me-1">schedule</i>
-                <p class="mb-0 text-sm"> campaign sent 2 days ago </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 col-md-6 mt-4 mb-4">
-          <div class="card z-index-2  ">
-            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
-              <div class="bg-gradient-success shadow-success border-radius-lg py-3 pe-1">
-                <div class="chart">
-                  <canvas id="chart-line" class="chart-canvas" height="170"></canvas>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <h6 class="mb-0 "> Daily Sales </h6>
-              <p class="text-sm "> (<span class="font-weight-bolder">+15%</span>) increase in today sales. </p>
-              <hr class="dark horizontal">
-              <div class="d-flex ">
-                <i class="material-icons text-sm my-auto me-1">schedule</i>
-                <p class="mb-0 text-sm"> updated 4 min ago </p>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-lg-4 mt-4 mb-3">
-          <div class="card z-index-2 ">
-            <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
-              <div class="bg-gradient-dark shadow-dark border-radius-lg py-3 pe-1">
-                <div class="chart">
-                  <canvas id="chart-line-tasks" class="chart-canvas" height="170"></canvas>
-                </div>
-              </div>
-            </div>
-            <div class="card-body">
-              <h6 class="mb-0 ">Completed Tasks</h6>
-              <p class="text-sm ">Last Campaign Performance</p>
-              <hr class="dark horizontal">
-              <div class="d-flex ">
-                <i class="material-icons text-sm my-auto me-1">schedule</i>
-                <p class="mb-0 text-sm">just updated</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
+  <div class="row mt-4">
+    <model-diagramme background-class="bg-gradient-primary shadow-primary" title="Diagramme 1"
+      subtitle="Présentation"></model-diagramme>
+    <model-diagramme background-class="bg-gradient-success shadow-success" title="Diagramme 2"
+      subtitle="Présentation"></model-diagramme>
+    <model-diagramme background-class="bg-gradient-dark shadow-dark" title="Diagramme 3"
+      subtitle="Présentation"></model-diagramme>
+  </div>
 
-      <div class="row mt-4">
-          <div class="col-">
-            <button class="btn btn-primary">
-              Charger votre fichier json
-            </button>
-          </div>
+  <div class="row mt-4 center">
+    <div class="">
+      <button class="btn  btn-primary" @click="openModal('Charger un fichier')">
+        Charger votre fichier json
+      </button>
+    </div>
+  </div>
+  
+  <modal-view tailleModalDialog="modal-lg" :modal-title="modalTitle">
+    <template v-slot:body>
+      <div class="row">
+        <div class="col-lg-4">
+          <button class="btn btn-sm btn-icon btn-info">
+            <i class="fas fa-file"></i>
+            Charger le fichier
+          </button>
+        </div>
       </div>
-      <laterale-page></laterale-page>
-</template>
+    </template>
+</modal-view>
+<laterale-page></laterale-page></template>
