@@ -25,7 +25,7 @@ const props = defineProps({
                         diagramme
                     </p>
                 </div> -->
-                <button class="btn btn-secondary">
+                <button class="btn btn-info">
                     Utilser ce modèle
                 </button> 
             </div>
