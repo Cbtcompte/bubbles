@@ -4,7 +4,15 @@ const props = defineProps({
     modalTitle : {type : String},
     classNotification : {type : String},
     messageNotification : {type : String},
+    labelButton : {type :  String},
 })
+
+const emits = defineEmits('functionSave')
+
+const executeFunction = () => {
+    emits('functionSave')
+}
+
 </script>
 
 <template>
@@ -28,7 +36,7 @@ const props = defineProps({
                             </div>
                             <div class="modal-footer">
                                 <button type="button" class="btn bg-gradient-danger" data-bs-dismiss="modal">Fermer</button>
-                                <button type="button" class="btn bg-gradient-info">Valider</button>
+                                <button type="button" class="btn bg-gradient-info" @click="executeFunction">{{labelButton}}</button>
                             </div>
                         </div>
                     </div>
