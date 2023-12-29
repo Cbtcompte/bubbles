@@ -1,6 +1,8 @@
 <script setup>
 import { XlsxRead, XlsxJson } from 'vue3-xlsx/dist/vue3-xlsx.cjs.prod.js';
 import ModalView from '@/components/tools/ModalView.vue';
+import NotificationView from '@/components/tools/NotificationView.vue';
+
 
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
@@ -66,9 +68,8 @@ const sendFile = async () => {
         <div class="row">
             <div class="col-lg-4"></div>
             <div class="col-lg-6">
-                <div class="alert alert-danger text-white d-flex" style="font-weight: bolder;" role="alert" v-if="hasMessage != ''">
-                    <!-- <i class="fas fa-times"></i> -->
-                    {{ hasMessage }}
+                <div v-if="hasMessage != ''">
+                    <notification-view :messageNotification="hasMessage" classNotification="alert-danger"></notification-view>
                 </div>
                 <input type="file" mode="basic" name="demo[]"  class="btn-sm btn btn-primary" @change="select"/>
             </div>

@@ -1,7 +1,7 @@
 <script setup>
 import * as echarts from 'echarts'
 
-import { onMounted, ref, computed } from 'vue';
+import { onMounted, ref, computed, watch } from 'vue';
 import { useDataStore } from '@/stores/dataBulles'
 import { storeToRefs } from 'pinia'
 
@@ -9,7 +9,7 @@ import SettingBulle from '@/components/customeBulle/SettingBulle.vue'
 // import CheckIcon from '@/components/customeBulle/CheckIcon.vue'
 import ColorChoice from '@/components/customeBulle/ColorChoice.vue'
 // import ModifGraph from '@/views/pages/includes/ModifGraph.vue'
-// import NotificationView from '@/components/tools/NotificationView.vue';
+import NotificationView from '@/components/tools/NotificationView.vue';
 // import ModalView from '@/components/tools/ModalView.vue'
 import ModalFile from '@/views/partials/ModalFile.vue';
 import ModalBulle from '@/views/partials/ModalBulle.vue';
@@ -41,6 +41,16 @@ const edgesUse = ref([])
 const edges = ref([])
 const saveDataInFile = ref([])
 
+
+/**
+ * Watch
+ */
+
+watch(dataGraph, (newDataGraph, oldDataGraph) => {
+    initDomForGraph()
+}, { deep: true })
+
+
 /**
  * Computed methodes
  * 
@@ -62,7 +72,7 @@ const dataIsEmpty = computed(() => {
     }
 })
 
-const getGraphBulle = computed(() => dataGraph.value)
+const computedDataGraph = computed(() => dataGraph.value)
 
 
 /**
@@ -77,7 +87,6 @@ const openModal = (idModal) => {
   // eslint-disable-next-line no-undef
   $('#'+idModal).modal('show')
 }
-
 
 const modifierFormBulle = (parametre) => {
     if (switchTab.value == "parent") {
@@ -163,18 +172,6 @@ const modifierBulleSpecifique = (key, item) => {
     createLinkBettweenData()
 }
 
-// const changeVisibility = (element) => {
-//     let resulte = true;
-//     data.value.map((item) => {
-//         if (item.id == element.id) {
-//             item.visibility = !element.visibility
-//             resulte = item.visibility
-//         }
-//     })
-
-//     return resulte
-// }
-
 const createFileTextSaveModification = (type) => {   
     // Création d'un objet Blob
     const blob = new Blob([JSON.stringify(saveDataInFile.value)], { type: type });
@@ -229,22 +226,19 @@ const initDomForGraph = async () => {
                 height: '900',
             })
 
-             // eslint-disable-next-line no-undef
-             $( "#chart-container").show(2000);
-
             // Option de visualisation
             setInterval(() => {
             }, 1000)
             myChart.setOption({
-                animationDurationUpdate: 3000,
-                animationEasingUpdate: 'quinticInOut',
+                // animationDurationUpdate: 3000,
+                // animationEasingUpdate: 'quinticOutIn',
                 series: [
                     {
                         type: 'graph',
                         layout: 'force',
                         draggable: true,
-                        data: getGraphBulle.value,
-                        animation: true,
+                        data: computedDataGraph.value,
+                        // animation: false,
                         roam: true,
                         edges: edgesUse.value,
                         edgeSymbol: ['circle', 'arrow'],
@@ -358,6 +352,7 @@ const visualisation = async () => {
             visibility: true,
             parent: element.parent,
             isParent: element.isParent,
+            isVisible : false,
             label: {
                 show: true,
                 color: '#fff',
@@ -419,6 +414,10 @@ const modalFunctionInitGraph = async () => {
     await initGraph()
 }
 
+const openPanelBulle = (tab) => {
+    switchTabModif.value = tab
+}
+
 /**
  * Cycle de vie 
  * 
@@ -439,11 +438,11 @@ onMounted(async () => {
                 </h4>
                 <div class="col-3">
                     <div class="">
-                        <button @click="changeActiveGraph(true)" class="col-6 btn btn-outline-secondary btn-icon" :class="{'bg-primary text-white' : isActiveGraph}">
-                            <i class="fa fa-code-fork"></i> Graph
+                        <button @click="changeActiveGraph(true)" class="col-6 btn btn-sm btn-outline-secondary btn-icon" :class="{'bg-primary text-white' : isActiveGraph}">
+                            <i class="fa fa-code-fork fs-6"></i> Graph
                         </button>
-                        <button @click="changeActiveGraph(false)" class="col-6 btn btn-outline-secondary btn-icon" :class="{'bg-primary text-white' : !isActiveGraph}">
-                            <i class="fa fa-code"></i> JSON
+                        <button @click="changeActiveGraph(false)" class="col-6 btn btn-sm btn-outline-secondary btn-icon" :class="{'bg-primary text-white' : !isActiveGraph}">
+                            <i class="fa fa-code fs-6"></i> JSON
                         </button>
                     </div>
                 </div>
@@ -464,7 +463,7 @@ onMounted(async () => {
                         <template v-else>
                             <div>
                                <pre>
-                                    {{ dataBulle }}
+                                    {{ getDataBulle }}
                                </pre>
                             </div>
                         </template>
@@ -496,10 +495,10 @@ onMounted(async () => {
                         <p class="" style="font-size: 12px;">Appliquer des modifications à votre diagramme</p>
                     </div>
                     <div class="col-lg-6 col-md-4 mb-1" style="text-align: right;">
-                        <div class="btn-group dropup" >
-                            <button type="button" class="btn btn-sm bttn-icon bg-gradient-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-file-export"></i>
-                                Enregistrer
+                        <div class="btn-group dropdown" >
+                            <button type="button" class="btn btn-sm btn-icon bg-gradient-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-file-export fs-6"></i>
+                                Enregistrer la sélection
                             </button>
                             <ul class="dropdown-menu px-2 py-3" aria-labelledby="dropdownMenuButton">
                                 <li><a class="dropdown-item border-radius-md" href="javascript:;" @click.prevent="createFileTextSaveModification('text/plain')">Format texte (.txt)</a></li>
@@ -518,7 +517,7 @@ onMounted(async () => {
                                 </div>
                                 <div class="col-6 col-xs-12" style="text-align: right;">
                                     <button @click.prevent="openModal('modalBulle')" class="btn btn-icon btn-sm btn-primary">
-                                        <i class="fas fa-plus"></i>
+                                        <i class="fas fa-plus-circle fs-6"></i>
                                         Ajouter une donnée
                                     </button>
                                 </div>
@@ -555,7 +554,17 @@ onMounted(async () => {
                                 </div>
                             </div>
                             <hr class="dark horizontal">
-                            <h6>Bulles</h6>
+                            <div class="row">
+                                <div class="col-6 col-xs-12">
+                                    <h6>Bulles</h6>
+                                </div>
+                                <div class="col-6 col-xs-12" style="text-align: right;">
+                                    <button @click.prevent="openPanelBulle('bulle')" class="btn btn-icon btn-sm btn-primary">
+                                        <i class="fa fa-exchange fs-6"></i>
+                                        Manipuler les bulles
+                                    </button>
+                                </div>
+                            </div>
                             <hr class="dark horizontal">
                             <div class="mb-3">
                                 <div class="nav-wrapper position-relative end-0">
@@ -600,13 +609,25 @@ onMounted(async () => {
                                 <setting-bulle :switch-tab="switchTab" @modifier-form-bulle="modifierFormBulle"
                                     @modifier-label-text="modifierLabelText" :key="switchTab"></setting-bulle>
                             </div>
-                            <!-- <div class="d-flex ">
-                                <i class="material-icons text-sm my-auto me-1">edit</i>
-                                <p class="mb-0 text-sm"> campaign sent 2 days ago </p>
-                            </div> -->
                         </div>
                         <div v-else>
                             <div>
+                                <div class="row">
+                                    <div class="col-6 col-xs-12">
+                                        <button @click.prevent="openModal('modalBulle')" class="btn btn-icon btn-sm btn-primary">
+                                            <i class="fas fa-plus-circle fs-6"></i>
+                                            Ajouter une donnée
+                                        </button>
+                                    </div>
+                                    <div class="col-6 col-xs-12" style="text-align: right;">
+                                        <button @click.prevent="openPanelBulle('general')" class="btn btn-sm btn-primary btn-icon">
+                                            <i class="fa fa-times-circle fs-6"></i> Fermer
+                                        </button>
+                                    </div>
+                                </div>
+                                <div v-if="hasNotification">
+                                    <notification-view :messageNotification="messageNotification" :classNotification="classNotification"></notification-view>
+                                </div>
                                 <div class="table-responsive">
                                     <table class="table align-items-center mb-0">
                                         <thead class="bg-dark text-white">
@@ -615,11 +636,12 @@ onMounted(async () => {
                                                 <th>ID</th>
                                                 <th>Libelle</th>
                                                 <th>Parent ID</th>
+                                                <th>Cacher ses enfants</th>
                                                 <th></th>
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            <template v-for="(item, key) in dataGraph" :key="key">
+                                            <template v-for="(item, key) in computedDataGraph" :key="key">
                                                 <tr>
                                                     <td>
                                                         <input type="checkbox" :name="'isParent_' + key"
@@ -628,13 +650,17 @@ onMounted(async () => {
                                                     <td>
                                                         <p>{{ item.id }}</p>
                                                     </td>
-                                                    <td>
-                                                        <input type="text" :name="'libelle_' + key" id="libelle"
-                                                            v-model="item.name">
+                                                    <td class="">
+                                                        <input type="text" :name="'libelle_' + key" id="libelle" v-model="item.name"/>
                                                     </td>
                                                     <td>
                                                         <input type="number" style="width: 50%;" :name="'parent_' + key"
                                                             id="parent" v-model="item.parent">
+                                                    </td>
+                                                    <td>
+                                                        <div class="form-check form-switch">
+                                                            <input @click.prevent="" class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" :checked="item.isVisible">
+                                                        </div>
                                                     </td>
                                                     <td>
                                                         <button @click="modifierBulleSpecifique(key, item)"
