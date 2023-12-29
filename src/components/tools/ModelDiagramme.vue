@@ -6,7 +6,7 @@ const props = defineProps({
 })
 </script>
 <template>
-    <div class="col-lg-4 col-md-6 mt-4 mb-4">
+    <div class="col-lg-4 col-md-4 col-xs-12 col-sm-4 mt-4 mb-4">
         <div class="card z-index-2 ">
             <div class="card-header p-0 position-relative mt-n4 mx-3 z-index-2 bg-transparent">
                 <div class="border-radius-lg py-3 pe-1" :class="props.backgroundClass">
@@ -25,7 +25,7 @@ const props = defineProps({
                         diagramme
                     </p>
                 </div> -->
-                <button class="btn btn-info">
+                <button class="btn-sm btn btn-info">
                     Utilser ce modèle
                 </button> 
             </div>

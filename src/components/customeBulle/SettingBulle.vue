@@ -1,5 +1,5 @@
 <script setup>
-
+const props = defineProps({switchTab : {type : String}})
 const emit = defineEmits(['modifierFormBulle', 'modifierLabelText'])
 
 const executeFunction = (event, attribut, fonction) => {
@@ -26,7 +26,7 @@ const changeTexteValue = (event, attribut) => {
 <template>
     <div class="mb-4">
         <div>
-            <h6 class="form-label text-bold">Taille et forme des bulles</h6>
+            <h6 class="form-label text-bold">Taille et forme des bulles {{ (props.switchTab == "enfant") ? " enfants" : "" }}</h6>
         </div>
         <div class="row">
             <div class="col-lg-6 col-md-6">
@@ -45,7 +45,7 @@ const changeTexteValue = (event, attribut) => {
                 </div>
             </div>
             <div class="col-lg-6 col-md-6">
-                <label class="form-label">Taille de la bulle</label>
+                <label class="form-label">Taille de la bulle </label>
                 <div class="input-group input-group-outline">
                     <input type="number" value="60" min="60" @keyup="executeFunction($event,'symbolSize', changeBulleValue)" class="form-control">
                 </div>
@@ -55,7 +55,7 @@ const changeTexteValue = (event, attribut) => {
     </div>
     <div class="mb-4">
         <div>
-            <h6 class="form-label text-bold">Texte des bulles</h6>
+            <h6 class="form-label text-bold">Texte des bulles {{ (switchTab == "enfant") ? " enfants" : "" }}</h6>
         </div>
         <div class="row mb-2">
             <div class="col-lg-6 col-md-6">

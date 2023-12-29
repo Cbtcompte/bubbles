@@ -1,5 +1,5 @@
 <template>
-<img class="logo" src="../auth/bubbleFront.png"/>
+<img class="logo" src="@/assets/images/logo-ct.png"/>
  <h2 class="titre"> Login Page</h2>
  <div class="login">
     <input type="text" v-model="email" placeholder="enter email">

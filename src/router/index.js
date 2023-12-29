@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 import App from '../views/layouts/App.vue'
 import LoginView from '../views/auth/LoginView.vue'
 import RegisterView from '../views/auth/RegisterView.vue'
-import GraphView_2 from '../views/pages/GraphView_2.vue'
+import GraphView from '../views/pages/GraphView.vue'
 // import HomeView from '../views/HomeView.vue'
 import DashboardView from '../views/pages/DashboardView.vue'
 
@@ -22,7 +22,7 @@ const router = createRouter({
         {
           path: '/graph',
           name: 'graph',
-          component: GraphView_2,
+          component: GraphView,
         }
       ]
     },
