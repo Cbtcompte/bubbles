@@ -1,5 +1,5 @@
 <template>
- <img class="logo" src="../auth/bubbleFront.png"/>
+ <img class="logo" src="@/assets/images/logo-ct.png"/>
  <h2 class="titre"> Register Page</h2>
  <div class="register">
     <input type="text" v-model="name" placeholder="enter name">
@@ -9,14 +9,12 @@
  </div>
 
  <p class="link">
-        <RouterLink to="/RegisterView">Login</RouterLink>
+        <RouterLink to="/LoginView">Login</RouterLink>
  </p>
 </template>
 
-<script>
-export default {
-    name: 'RegisterView'
-}
+<script setup> 
+
 </script>
 
 <style>
@@ -42,7 +40,7 @@ export default {
 .register button {
     background-color: #154968;
     position: relative;
-    margin-left: 80px;
+    margin-left: 390px;
     width: 320px;
     height: 40px;
     border: 1px solid skyblue;

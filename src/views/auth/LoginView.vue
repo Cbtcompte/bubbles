@@ -1,21 +1,22 @@
+
 <template>
 <img class="logo" src="@/assets/images/logo-ct.png"/>
  <h2 class="titre"> Login Page</h2>
+ <form @submit.prevent="login">
  <div class="login">
-    <input type="text" v-model="email" placeholder="enter email">
-    <input type="password" v-model="password" placeholder="enter password">
+    <input type="text" placeholder="enter email" />
+    <input type="password" placeholder="enter password" />
     <button v-on:click="Login">Login</button>
     <p class="link">
         <RouterLink to="/RegisterView">Register</RouterLink>
     </p>
 
  </div>
+ </form>
 </template>
 
-<script>
-export default {
-    name: 'LoginView'
-}
+<script setup>
+
 </script>
 
 <style>
@@ -25,8 +26,8 @@ export default {
 }
 .logo {
     width: 110px;
-    position: relative;
-    margin-left: 180px;
+    position: absolute;
+    left: 300px;
 }
 .login input {
     width: 300px;
@@ -41,7 +42,7 @@ export default {
 .login button {
     background-color: #154968;
     position: relative;
-    margin-left: 80px;
+    margin-left: 390px;
     width: 320px;
     height: 40px;
     border: 1px solid skyblue;

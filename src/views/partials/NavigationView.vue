@@ -84,7 +84,7 @@
     </div>
     <div class="sidenav-footer position-absolute w-100 bottom-0 ">
       <div class="mx-3">
-        <a class="btn bg-gradient-primary w-100" href="" type="button">Connectez-vous</a>
+        <a class="btn bg-gradient-primary w-100" href="/LoginView" type="button">Connectez-vous</a>
       </div>
     </div>
   </aside>
