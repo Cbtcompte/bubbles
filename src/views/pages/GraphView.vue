@@ -3,6 +3,7 @@ import * as echarts from 'echarts'
 
 import { onMounted, ref, computed } from 'vue';
 import { useDataStore } from '@/stores/dataBulles'
+import { storeToRefs } from 'pinia'
 
 import SettingBulle from '@/components/customeBulle/SettingBulle.vue'
 // import CheckIcon from '@/components/customeBulle/CheckIcon.vue'
@@ -19,6 +20,8 @@ import ModalBulle from '@/views/partials/ModalBulle.vue';
  * Variable 
  */
 const dataStore = useDataStore()
+const { dataBulle, getDataBulle } = storeToRefs(dataStore)
+const { addDataStore, updateFormeBulle } = dataStore
 
 const diagrammeName = ref('Diagramme à bulle')
 const switchTab = ref('parent')
@@ -52,7 +55,7 @@ const computedActiveGraph = computed(() => {
 
 const dataIsEmpty = computed(() => {
     // || !initGraphBool.value
-    if(dataStore.getDataBulle == null || dataStore.getDataBulle.length == 0){
+    if(getDataBulle.value == null || getDataBulle.value.length == 0){
         return false;
     }else{
         return true;
@@ -373,7 +376,7 @@ const visualisation = async () => {
 
 const addDataGraph = async (data) =>  {
     let val = {
-        id : dataStore.dataBulle.length+1,
+        id : dataBulle.value.length+1,
         data : data.libelle,
         couleur : "#41D55",
         tailleBulle : 100,
@@ -384,10 +387,10 @@ const addDataGraph = async (data) =>  {
         parent : data.parentId,
     }
 
-    dataStore.addDataStore(val)
+    addDataStore(val)
 
     if(!data.parentId || data.parentId != "#"){
-        dataStore.updateFormData(data.parentId)
+        updateFormeBulle(data.parentId)
     }
     
     await visualisation()
@@ -461,7 +464,7 @@ onMounted(async () => {
                         <template v-else>
                             <div>
                                <pre>
-                                    {{ dataStore.dataBulle }}
+                                    {{ dataBulle }}
                                </pre>
                             </div>
                         </template>

@@ -15,16 +15,16 @@ export const useDataStore = defineStore('bulles', () => {
     dataBulle.value = value
   }
 
-  function updateFormData(id) {
-    // let copie = [...dataBulle.value]
-    dataBulle.value.map((item) => {
+  function updateFormeBulle(id) {
+    let copie = [...dataBulle.value]
+    copie.value.map((item) => {
         if(item.id == id){
           item.forme = "diamond"
         }
     })
 
-    // dataBulle.value = copie
+    dataBulle.value = copie
   }
 
-  return {dataBulle, getDataBulle, addDataStore, initData, updateFormData}
+  return {dataBulle, getDataBulle, addDataStore, initData, updateFormeBulle}
 })
