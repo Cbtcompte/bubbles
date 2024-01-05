@@ -52,7 +52,7 @@ const changeColorGlobal = (color) => {
             <template v-if="globalColorRef == '#1A73E8'">
                 <check-icon></check-icon>
             </template>
-            Bleu claire
+            Bleu clair
         </span>
         <span @click="changeColorGlobal('#4CAF50')" class="badge filter mb-2 bg-gradient-success"
             style="margin-right: 5px;" data-color="success">

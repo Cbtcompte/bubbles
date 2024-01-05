@@ -1,18 +1,17 @@
-import { ref, computed } from 'vue'
+import { ref } from 'vue'
 import { defineStore } from 'pinia'
 
 export const useDataStore = defineStore('bulles', () => {
   const dataBulle = ref([])
 
-  const getDataBulle = computed(() => dataBulle.value)
-
   function addDataStore(val){
-    let arrayData = [...dataBulle.value, val]
-    dataBulle.value = arrayData
+    dataBulle.value.push(val)
+
+    return dataBulle.value
   }
 
-  function initData(value){
-    dataBulle.value = value
+  async function initData(value){
+     dataBulle.value = value
   }
 
   function updateFormeBulle(id) {
@@ -24,7 +23,9 @@ export const useDataStore = defineStore('bulles', () => {
     })
   
     dataBulle.value = copie
+
+    return dataBulle.value
   }
 
-  return {dataBulle, getDataBulle, addDataStore, initData, updateFormeBulle}
+  return {dataBulle, addDataStore, initData, updateFormeBulle}
 })

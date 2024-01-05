@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import App from '../views/layouts/App.vue'
 import LoginView from '@/views/auth/LoginView.vue'
-import RegisterView from '../views/auth/RegisterView.vue'
-import GraphView from '../views/pages/GraphView.vue'
+import RegisterView from '@/views/auth/RegisterView.vue'
+import GraphView from '@/views/pages/GraphView.vue'
+import CreateFileJson from '@/views/pages/CreateFileJson.vue'
 // import HomeView from '../views/HomeView.vue'
 import DashboardView from '../views/pages/DashboardView.vue'
 //import { accountService } from '../_services/account.service'
@@ -13,7 +14,7 @@ const router = createRouter({
   routes: [
     {
       path: '/',
-      name: 'home',
+      name: '',
       component: App,
       children : [
         {
@@ -22,23 +23,27 @@ const router = createRouter({
           component: DashboardView,
         },
         {
-          path: '/LoginView',
-          name: 'LoginView',
-          component: LoginView
-        },
-        {
-          path: '/RegisterView',
-          name: 'RegisterView',
-          component: RegisterView
-        },
-        {
           path: '/graph',
           name: 'graph',
           component: GraphView,
+        },
+        {
+          path: '/creer-fichier-json',
+          name: 'json',
+          component: CreateFileJson,
         }
       ]
     },
-
+    {
+      path: '/connexion',
+      name: 'LoginView',
+      component: LoginView
+    },
+    {
+      path: '/inscription',
+      name: 'RegisterView',
+      component: RegisterView
+    },
   ]
 })
 

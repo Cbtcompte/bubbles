@@ -1,44 +1,51 @@
 <script setup>
 import * as echarts from 'echarts'
 
-import { onMounted, ref, computed, watch } from 'vue';
-import { useDataStore } from '@/stores/dataBulles'
 import { storeToRefs } from 'pinia'
+import { useDataStore } from '@/stores/dataStore'
+import { onMounted, ref, computed, watch } from 'vue';
 
 import SettingBulle from '@/components/customeBulle/SettingBulle.vue'
-// import CheckIcon from '@/components/customeBulle/CheckIcon.vue'
 import ColorChoice from '@/components/customeBulle/ColorChoice.vue'
-// import ModifGraph from '@/views/pages/includes/ModifGraph.vue'
 import NotificationView from '@/components/tools/NotificationView.vue';
-// import ModalView from '@/components/tools/ModalView.vue'
-import ModalFile from '@/views/partials/ModalFile.vue';
-import ModalBulle from '@/views/partials/ModalBulle.vue';
+import Swal from 'sweetalert2'
+
+import { toastSuccess, toastWarning, toastDanger } from '@/assets/helpers/toastHelper.js'
+import ModalFile from '@/views/partials/Modals/ModalFile.vue';
+import ModalBulle from '@/views/partials/Modals/ModalBulle.vue';
 
 
 /**
  * 
  * Variable 
  */
-const dataStore = useDataStore()
-const { dataBulle, getDataBulle } = storeToRefs(dataStore)
-const { addDataStore, updateFormeBulle } = dataStore
+const store = useDataStore()
+const { dataBulle } = storeToRefs(store)
 
 const diagrammeName = ref('Diagramme à bulle')
+
 const switchTab = ref('parent')
 const switchTabModif = ref('general')
+const isActiveGraph = ref(true)
+
 const switchStyleEnfant = ref('translate3d(90%, 0px, 0px)')
 const switchStyleParent = ref('translate3d(5%, 0px, 0px)')
 const globalColor = ref('#000080')
+const globalSymbolParent = ref('diamond')
+const globalSymbolEnfant = ref('circle')
+
 const applyGlobalColor = ref(false)
 const initGraphBool = ref(false)
-const isLoading = ref(true)
+const eventInit = ref(true)
+
 const messageNotification = ref('')
 const classNotification = ref('')
 const hasNotification = ref(false)
-const isActiveGraph = ref(true)
+
 const dataGraph = ref([])
 const edgesUse = ref([])
 const edges = ref([])
+const idParentTab = ref([])
 const saveDataInFile = ref([])
 
 
@@ -47,7 +54,9 @@ const saveDataInFile = ref([])
  */
 
 watch(dataGraph, (newDataGraph, oldDataGraph) => {
-    initDomForGraph()
+    if(!eventInit.value){
+        initDomForGraph()
+    }
 }, { deep: true })
 
 
@@ -65,7 +74,7 @@ const computedActiveGraph = computed(() => {
 
 const dataIsEmpty = computed(() => {
     // || !initGraphBool.value
-    if(getDataBulle.value == null || getDataBulle.value.length == 0){
+    if(dataBulle.value == null || dataBulle.value.length == 0){
         return false;
     }else{
         return true;
@@ -76,11 +85,34 @@ const computedDataGraph = computed(() => dataGraph.value)
 
 
 /**
- *  Méthode 
+ *  Changer de tab 
  * 
  */
+const openPanelBulle = (tab) => {
+    switchTabModif.value = tab
+}
+
+const changeActiveGraph = async (value) => {
+    isActiveGraph.value = value
+    if(isActiveGraph.value){
+        setTimeout(async () => {
+            await initDomForGraph()
+        }, 100)
+    }
+}
+
 const switchTabFunction = (typeBulle) => {
     switchTab.value = typeBulle
+}
+
+/**
+ * Open Modal
+ * 
+ *
+ */
+const modalFunctionInitGraph = async () => {
+    initGraphBool.value =  true
+    await initGraph()
 }
 
 const openModal = (idModal) => {
@@ -88,20 +120,28 @@ const openModal = (idModal) => {
   $('#'+idModal).modal('show')
 }
 
+ /**
+  * Modification Global du Graph
+  * 
+  * @param {Object} parametre 
+  */
 const modifierFormBulle = (parametre) => {
     if (switchTab.value == "parent") {
+        globalSymbolParent.value = parametre[0]
         dataGraph.value.map((item) => {
             if (item.isParent) {
                 item[parametre[1]] = parametre[0]
             }
         })
     } else {
+        globalSymbolEnfant.value = parametre[0]
         dataGraph.value.map((item) => {
             if (!item.isParent) {
                 item[parametre[1]] = parametre[0]
             }
         })
     }
+    initDomForGraph()
 }
 
 const modifierLabelText = (parametre) => {
@@ -118,6 +158,7 @@ const modifierLabelText = (parametre) => {
             }
         })
     }
+    initDomForGraph()
 }
 
 const modifierColorBulle = (parametre) => {
@@ -136,6 +177,7 @@ const modifierColorBulle = (parametre) => {
             }
         })
     }
+    initDomForGraph()
 }
 
 const choiceGlobalOrNot = (value) => {
@@ -152,29 +194,23 @@ const choiceGlobalOrNot = (value) => {
             item['itemStyle'] = null
         })
         applyGlobalColor.value = true
-    }
+    }    
 }
 
 const globalColorFunction = (color) => {
     globalColor.value = color
+    initDomForGraph()
 }
 
-const modifierBulleSpecifique = (key, item) => {
-    if (item['id'] != item['parent']) {
-        dataGraph.value[key] = item
-        //data.value[key] = item
-    } else {
-        hasNotification.value = true
-        messageNotification.value = "Une bulle ne peut pointer sur elle-même"
-        classNotification.value = 'alert-danger'
-    }
 
-    createLinkBettweenData()
-}
-
-const createFileTextSaveModification = (type) => {   
+/**
+ * Save the modification in new file
+ * 
+ * @param {String} type 
+ */
+const saveModificationInNewFile = (fileName, type) => {   
     // Création d'un objet Blob
-    const blob = new Blob([JSON.stringify(saveDataInFile.value)], { type: type });
+    const blob = new Blob([JSON.stringify(transformDataToOriginalFile(saveDataInFile.value))], { type: type });
 
     // Création d'un objet URL pour le Blob
     const url = window.URL.createObjectURL(blob);
@@ -182,7 +218,17 @@ const createFileTextSaveModification = (type) => {
     // Création d'un élément d'ancre pour le téléchargement
     const a = document.createElement('a');
     a.href = url;
-    a.download = 'data.txt';
+    switch (type) {
+        case 'application/json':
+            a.download = `${fileName}.json`;
+            break;
+        case 'text/plain':
+            a.download = `${fileName}.text`;
+            break;
+        default:
+            a.download = `${fileName}.png`;
+            break;
+    }
 
     // Ajout de l'élément d'ancre à la page
     document.body.appendChild(a);
@@ -194,24 +240,115 @@ const createFileTextSaveModification = (type) => {
     document.body.removeChild(a);
 }
 
+const transformDataToOriginalFile = (listGraphSave) => {
+    let originalDataForme = []
+    listGraphSave.forEach((item) => {
+        originalDataForme.push(
+            {
+                "id": item.id,
+                "data": item.name,
+                "couleur": item.itemStyle.color,
+                "tailleBubble": item.symbolSize,
+                "tailleLabel": item.label.fontSize,
+                "fontFamily": item.label.fontFamily,
+                "forme": item.symbol,
+                "isParent": item.isParent,
+                "parent": item.parent
+            },
+        )
+    })
+
+    return originalDataForme
+}
+
+const openSweetAlert = (type) => {
+    Swal.mixin({
+        customClass: {
+            confirmButton: "btn-sm btn btn-success ms-2",
+            cancelButton: "btn-sm btn btn-primary"
+        },
+        buttonsStyling: false
+    }).fire({
+        title: "Entrer le nom du fichier",
+        input: "text",
+        inputAttributes: {
+            autocapitalize: "off"
+        },
+        preConfirm : (fileName) => {
+            if(fileName.length != 0){
+                saveModificationInNewFile(fileName, type)
+            }else{
+                Swal.showValidationMessage("Ce champ ne doit pas être vide"); 
+            }
+        },
+        showCancelButton: true,
+        confirmButtonText: "Créer mon fichier",
+        reverseButtons : true,
+    }).then((result) => {
+        if (result.isConfirmed) {
+            toastSuccess('Votre fichier à bien été télécharger')
+        }
+    });
+}
+
+/**
+ * Création du graphe sur le dom
+ * 
+ */
+const visualisation = async () => {
+    dataGraph.value = []
+    idParentTab.value = []
+
+    store.dataBulle.forEach((element) => {
+        if(element.parent == element.id){
+            toastWarning("Une bulle ne peut pointer sur elle-même")
+        }
+        idParentTab.value.push((element.parent == element.id) ? null : element.parent)
+        dataGraph.value.push({
+            id: element.id,
+            name: element.data,
+            fixed: true,
+            symbol: (element.isParent) ? "diamond" : element.forme, // 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow', 'none'
+            symbolSize: element.tailleBubble, // [width, height]
+            visibility: true,
+            parent: (element.parent == element.id) ? null : element.parent,
+            isParent:  element.isParent,
+            label: {
+                show: true,
+                color: '#fff',
+                fontSize: element.tailleLabel,
+                fontFamily: element.fontFamily,
+                fontStyle: 'normal',
+                fontWeigth: 'normal'
+            },
+            itemStyle: {
+                color:  globalColor.value, //Générale
+                borderColor: globalColor.value // Générale
+            },
+        },)
+    })
+}
+
 const createLinkBettweenData = async () => {
     edges.value = []
     edgesUse.value = []
     dataGraph.value.forEach(element => {
         if (element.parent != null) {
             edges.value.push({
-                source: element.parent - 1,
-                target: element.id - 1,
+                source: element.parent-1,
+                target: element.id-1,
                 lineStyle: {
-                    type: 'dotted'
+                    type: 'dotted',
+                    width: 1,
                 }
             });
 
             edgesUse.value.push({
-                source: element.parent - 1,
-                target: element.id - 1,
+                source: element.parent -1,
+                target: element.id-1,
                 lineStyle: {
                     type: 'dotted',
+                    width: 1,
                 }
             });
         }
@@ -240,18 +377,10 @@ const initDomForGraph = async () => {
                         data: computedDataGraph.value,
                         // animation: false,
                         roam: true,
-                        edges: edgesUse.value,
+                        links: edgesUse.value,
                         edgeSymbol: ['circle', 'arrow'],
                         edgeSymbolSize: [5, 10],
                         selectedMode: "multiple",
-                        links: [
-                            {
-                                lineStyle: {
-                                    width: 5,
-                                    curveness: 0.2
-                                }
-                            }
-                        ],
                         lineStyle: {
                             opacity: 0.9,
                             width: 2,
@@ -286,9 +415,6 @@ const initDomForGraph = async () => {
                 ]
             });
 
-            // isLoading.value = false
-
-            //Ici je gère la visibilité et la disparution des enfants de la bulle selectionnée
             myChart.on('click', function (params) {
                 let countPresenceData = null
                 saveDataInFile.value.map((element) => {
@@ -302,94 +428,13 @@ const initDomForGraph = async () => {
                 }else{
                     saveDataInFile.value = saveDataInFile.value.filter((item) => item.id != countPresenceData)
                 }
-                
-
-                // let element = params.data
-                //let boole = changeVisibility(element)
-                // if (boole) {
-                //     edgesUse.value = edges.value
-                //     //dataGraph.value = data.value
-                //     dataGraph.value.map((item, index) => {
-                //         item.symbol = saveSymbol[index].symbol
-                //         // if (item.parent == element.id) {
-                //         //     // saveSymbol.value.push({
-                //         //     //     key : index,
-                //         //     //     symbol : item.symbol,
-                //         //     //     parent : item.parent
-                //         //     // })
-                //         //     item.symbol = 'none'
-                //         // }
-                //     })
-                // } else {
-                //     edgesUse.value = edges.value.filter(item => item.source !== (element.id - 1))
-                //     dataGraph.value.map((item, index) => {
-                //         if (item.parent == element.id) {
-                //             saveSymbol.value.push({
-                //                 key: index,
-                //                 symbol: item.symbol,
-                //                 parent: item.parent
-                //             })
-                //             item.symbol = 'none'
-                //         }
-                //     })
-                // }
+                eventInit.value = false
             });
+            
         }catch (error) {
             console.log('Un problème '+error)
         }
     }
-}
-
-const visualisation = async () => {
-    dataGraph.value = []
-    dataStore.getDataBulle.forEach((element) => {
-        dataGraph.value.push({
-            id: element.id,
-            name: element.data,
-            fixed: true,
-            symbol: (element.isParent) ? "diamond" : element.forme, // 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow', 'none'
-            symbolSize: element.tailleBulle, // [width, height]
-            visibility: true,
-            parent: element.parent,
-            isParent: element.isParent,
-            isVisible : false,
-            label: {
-                show: true,
-                color: '#fff',
-                fontSize: element.tailleLabel,
-                fontFamily: element.fontFamily,
-                fontStyle: 'normal',
-                fontWeigth: 'normal'
-            },
-            itemStyle: {
-                color: globalColor.value, //Générale
-                borderColor: globalColor.value // Générale
-            },
-        },)
-    })
-}
-
-const addDataGraph = async (data) =>  {
-    let val = {
-        id : dataBulle.value.length+1,
-        data : data.libelle,
-        couleur : "#41D55",
-        tailleBulle : 100,
-        tailleLabel : 15,
-        fontFamily : "sans-serif",
-        forme : (data.isParent) ? "diamond" : "circle",
-        isParent : data.isParent,
-        parent : data.parentId,
-    }
-
-    addDataStore(val)
-
-    if(!data.parentId || data.parentId != "#"){
-        updateFormeBulle(data.parentId)
-    }
-    
-    await visualisation()
-    await createLinkBettweenData()
 }
 
 const initGraph = async () => {
@@ -400,22 +445,147 @@ const initGraph = async () => {
     }
 }
 
-const changeActiveGraph = async (value) => {
-    isActiveGraph.value = value
-    if(isActiveGraph.value){
-        setTimeout(async () => {
-            await initDomForGraph()
-        }, 100)
+
+/**
+ * Gestion du graph (ajout, modification et suppression)
+ * 
+ * @param {int} key 
+ * @param {Object} item 
+ */
+
+ const changeVisibility = (element) => {
+    let resulte = true;
+    dataGraph.value.map((item) => {
+        if (item.id == element.id) {
+            item.visibility = !element.visibility
+            resulte = item.visibility
+        }
+    })
+
+    return resulte
+}
+
+const cacheAllChildGraph = (element, visibility) => {
+    console.log(element)
+    // let boole = changeVisibility(element)
+    // if (boole) {
+    //     edgesUse.value = edges.value
+    //     //dataGraph.value = data.value
+    //     dataGraph.value.map((item, index) => {
+    //         // item.symbol = saveSymbol[index].symbol
+    //         // if (item.parent == element.id) {
+    //         //     // saveSymbol.value.push({
+    //         //     //     key : index,
+    //         //     //     symbol : item.symbol,
+    //         //     //     parent : item.parent
+    //         //     // })
+    //         //     item.symbol = 'none'
+    //         // }
+    //     })
+    // } else {
+    //     edgesUse.value = edges.value.filter(item => item.source !== (element.id - 1))
+    //     dataGraph.value.map((item, index) => {
+    //         if (item.parent == element.id) {
+    //             saveSymbol.value.push({
+    //                 key: index,
+    //                 symbol: item.symbol,
+    //                 parent: item.parent
+    //             })
+    //             item.symbol = 'none'
+    //         }
+    //     })
+    // }
+}
+
+const modifierBulleSpecifique = (key, item) => {   
+    if (item['id'] != item['parent']) {
+        let idOldParent = idParentTab.value[key]
+        let dataOfChildToOldParent = dataGraph.value.filter((val) => val.parent == idOldParent)
+
+        if(dataOfChildToOldParent.length == 0){
+            let parent = dataGraph.value.filter((value) => value.id == idOldParent)[0]
+            parent.isParent = false
+            parent.symbol = globalSymbolEnfant
+        }
+        if(item['parent'] != ""){
+            let parent = dataGraph.value.filter((value) => value.id == item['parent'])[0]
+            parent.isParent = true
+            parent.symbol = globalSymbolParent
+        }
+        dataGraph.value[key] = item
+        idParentTab.value[key] = item['parent']
+        createLinkBettweenData()
+        initDomForGraph()
+    } else {
+        hasNotification.value = true
+        messageNotification.value = "Une bulle ne peut pointer sur elle-même"
+        classNotification.value = 'alert-danger'
     }
 }
 
-const modalFunctionInitGraph = async () => {
-    initGraphBool.value =  true
-    await initGraph()
+const addDataGraph = async (data) =>  {
+    let val = {
+        id : dataBulle.value.length+1,
+        data : data.libelle,
+        couleur : "#41D55",
+        tailleBubble : 50,
+        tailleLabel : 15,
+        fontFamily : "sans-serif",
+        forme : (data.isParent) ? "diamond" : "circle",
+        isParent : data.isParent,
+        parent : data.parentId,
+    }
+
+    store.addDataStore(val)
+
+    if(!data.parentId || data.parentId != "#"){
+        store.updateFormeBulle(data.parentId)
+    }
+
+    toastSuccess('La donnée à bien été ajouter')
+    changeActiveGraph(false)
+    await visualisation()
+    await createLinkBettweenData()
+    saveDataInFile.value = []
+    // Swal.fire({
+    //     title: "Rafraichir le graph",
+    //     text: "Pour pouvoir visualiser le nouveau graph, veuillez le rafraichir",
+    //     icon: "info",
+    //     backdrop : false,
+    //     confirmButtonText : `<i class="fa fa-refresh"></i> Actualiser!`
+    // }).then(async (result) => {
+    //     console.log(result.isConfirmed)
+    //     if (result.isConfirmed) {
+
+    //     }
+    // })
 }
 
-const openPanelBulle = (tab) => {
-    switchTabModif.value = tab
+const deleteData = (key, item) => {
+    Swal.mixin({
+        customClass: {
+            confirmButton: "btn-sm btn-icon btn btn-danger ms-2",
+            cancelButton: "btn-sm btn-icon btn btn-primary"
+        },
+        buttonsStyling: false
+    }).fire({
+        title: "Suppression",
+        text: `Voulez-vous vraiment supprimer la donnée ${item.name}`,
+        icon: "question",
+        backdrop : true,
+        showCancelButton: true,
+        confirmButtonText : `<i class="fa fa-trash"></i> Supprimer!`,
+        cancelButtonText:  `<i class="fa fa-times"></i> Annuler!`,
+        reverseButtons : true,
+    }).then(async (result) => {
+        console.log(result.isConfirmed)
+        if (result.isConfirmed) {
+            dataGraph.value = dataGraph.value.filter((val) => val.id != item.id)
+            // createLinkBettweenData()
+            initDomForGraph()
+        }
+    })
+    
 }
 
 /**
@@ -436,6 +606,10 @@ onMounted(async () => {
                     <i class="fas fa-bullseye"></i>
                     {{ computedNameDiagrame }}
                 </h4>
+                <!-- <button @click.prevent="openModal('modalFile')" class="btn btn-primary btn-sm col-3">
+                    <i class="fas fa-file-import" style="font-size: 12px;"></i>
+                    Importer un fichier
+                </button> -->
                 <div class="col-3">
                     <div class="">
                         <button @click="changeActiveGraph(true)" class="col-6 btn btn-sm btn-outline-secondary btn-icon" :class="{'bg-primary text-white' : isActiveGraph}">
@@ -452,18 +626,17 @@ onMounted(async () => {
                     <template v-if="dataIsEmpty">
                         <template v-if="computedActiveGraph">
                             <div id="chart-container">
-                                <div style="text-align: center; margin-top: 40%;" v-if="isLoading">
+                                <div style="text-align: center; margin-top: 40%;">
                                     <div class="spinner-border text-primary" role="status">
                                         <span class="sr-only"></span> Chargement....
                                     </div>
                                 </div>
-                                <template v-else></template>
                             </div>
                         </template>
                         <template v-else>
                             <div>
                                <pre>
-                                    {{ getDataBulle }}
+                                    {{ dataBulle }}
                                </pre>
                             </div>
                         </template>
@@ -486,26 +659,29 @@ onMounted(async () => {
         </div>
         <div v-if="dataIsEmpty" class="col-lg-5 col-md-5">
             <div class="card bg-gray-100" style="height: auto">
-                <div class="card-header d-flex" style="height: auto;">
-                    <div class="col-lg-6 col-md-4">
-                        <h6 class="mb-0 ">
-                            <i class="fas fa-cogs"></i>
-                            Configuration du diagramme
-                        </h6>
-                        <p class="" style="font-size: 12px;">Appliquer des modifications à votre diagramme</p>
-                    </div>
-                    <div class="col-lg-6 col-md-4 mb-1" style="text-align: right;">
-                        <div class="btn-group dropdown" >
-                            <button type="button" class="btn btn-sm btn-icon bg-gradient-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                <i class="fas fa-file-export fs-6"></i>
-                                Enregistrer la sélection
-                            </button>
-                            <ul class="dropdown-menu px-2 py-3" aria-labelledby="dropdownMenuButton">
-                                <li><a class="dropdown-item border-radius-md" href="javascript:;" @click.prevent="createFileTextSaveModification('text/plain')">Format texte (.txt)</a></li>
-                                <li><a class="dropdown-item border-radius-md" href="javascript:;" @click.prevent="createFileTextSaveModification('image/*')">Format image</a></li>
-                            </ul>
+                <div class="card-header" style="height: auto;">
+                    <div class="d-flex">
+                        <div class="col-lg-6 col-md-4">
+                            <h6 class="mb-0 ">
+                                <i class="fas fa-cogs"></i>
+                                Configuration du diagramme
+                            </h6>
+                        </div>          
+                        <div class="col-lg-6 col-md-4" style="text-align: right;">
+                            <div class="btn-group dropdown" >
+                                <button type="button" class="btn btn-sm btn-icon bg-gradient-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-file-export fs-6"></i>
+                                    Enregistrer une sélection
+                                </button>
+                                <ul class="dropdown-menu px-2 py-3" aria-labelledby="dropdownMenuButton">
+                                    <li><a class="dropdown-item border-radius-md" href="javascript:;" @click.prevent="openSweetAlert('text/plain')">Format texte (.txt)</a></li>
+                                    <li><a class="dropdown-item border-radius-md" href="javascript:;" @click.prevent="openSweetAlert('application/json')">Format json (.json)</a></li>
+                                    <li><a class="dropdown-item border-radius-md" href="javascript:;" @click.prevent="openSweetAlert('image/*')">Format image (.png)</a></li>
+                                </ul>
+                            </div>
                         </div>
                     </div>
+                    Modifier votre diagramme
                 </div>
                
                 <div class="card-body overflow-y-scroll">
@@ -620,8 +796,8 @@ onMounted(async () => {
                                         </button>
                                     </div>
                                     <div class="col-6 col-xs-12" style="text-align: right;">
-                                        <button @click.prevent="openPanelBulle('general')" class="btn btn-sm btn-primary btn-icon">
-                                            <i class="fa fa-times-circle fs-6"></i> Fermer
+                                        <button @click.prevent="openPanelBulle('general')" class="btn btn-sm  btn-primary btn-icon-only">
+                                            <i class="fa fa-times-circle fs-6"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -636,7 +812,8 @@ onMounted(async () => {
                                                 <th>ID</th>
                                                 <th>Libelle</th>
                                                 <th>Parent ID</th>
-                                                <th>Cacher ses enfants</th>
+                                                <th></th>
+                                                <th></th>
                                                 <th></th>
                                             </tr>
                                         </thead>
@@ -658,14 +835,21 @@ onMounted(async () => {
                                                             id="parent" v-model="item.parent">
                                                     </td>
                                                     <td>
-                                                        <div class="form-check form-switch">
-                                                            <input @click.prevent="" class="form-check-input" type="checkbox" id="flexSwitchCheckDefault" :checked="item.isVisible">
-                                                        </div>
+                                                        <button @click="cacheAllChildGraph(item, item.visibility)"
+                                                            class="btn btn-sm btn-warning">
+                                                            <i :class="[!item.visibility ? 'fa fa-eye' : 'fa fa-eye-slash']"></i>
+                                                        </button>
                                                     </td>
                                                     <td>
                                                         <button @click="modifierBulleSpecifique(key, item)"
-                                                            class="btn btn-sm btn-info">
+                                                            class="btn btn-sm btn-success">
                                                             <i class="fas fa-check"></i>
+                                                        </button>
+                                                    </td>
+                                                    <td>
+                                                        <button @click="deleteData(key, item)"
+                                                            class="btn btn-sm btn-danger">
+                                                            <i class="fas fa-trash"></i>
                                                         </button>
                                                     </td>
                                                 </tr>

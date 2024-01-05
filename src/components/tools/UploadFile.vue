@@ -1,9 +1,9 @@
 <script setup>
-import { useToast } from "primevue/usetoast";
+import { usetoast2cbt } from "primevue/usetoast2cbt";
 import {ref } from 'vue';
 import FileUpload from 'primevue/fileupload';
 
-const toast = useToast();
+const toast2cbt = usetoast2cbt();
 const totalSize = ref(0);
 const totalSizePercent = ref(0);
 const files = ref([]);
@@ -33,7 +33,7 @@ const uploadEvent = (callback) => {
 };
 
 const onTemplatedUpload = () => {
-    toast.add({ severity: "info", summary: "Success", detail: "File Uploaded", life: 3000 });
+    toast2cbt.add({ severity: "info", summary: "Success", detail: "File Uploaded", life: 3000 });
 };
 
 const formatSize = (bytes) => {
@@ -54,7 +54,7 @@ const formatSize = (bytes) => {
 
 <template>
     <div class="card" style="height: 150%;">
-        <Toast />
+        <toast2cbt />
         <FileUpload name="demo[]" url="/api/upload" @upload="onTemplatedUpload($event)" :multiple="true" accept="image/*"
             :maxFileSize="1000000" @select="onSelectedFiles">
             <template v-slot:header="{ chooseCallback, uploadCallback, clearCallback, files }">

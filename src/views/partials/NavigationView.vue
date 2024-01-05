@@ -1,4 +1,7 @@
 <script setup>
+import { RouterLink, useRouter } from 'vue-router';
+
+const router = useRouter()
 </script>
 
 <template>
@@ -14,7 +17,7 @@
     <div class="collapse navbar-collapse  w-auto " id="sidenav-collapse-main">
       <ul class="navbar-nav">
         <li class="nav-item">
-          <router-link class="nav-link text-white active bg-gradient-primary" to="/">
+          <router-link class="nav-link text-white" :class="{'active bg-gradient-primary' : router.currentRoute.value.name == 'home'}"  :to="{name : 'home'}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="material-icons opacity-10">dashboard</i>
             </div>
@@ -22,11 +25,19 @@
           </router-link>
         </li>
         <li class="nav-item">
-          <router-link class="nav-link text-white" to="/graph">
+          <router-link class="nav-link text-white" :class="{'active bg-gradient-primary' : router.currentRoute.value.name == 'graph'}" :to="{name : 'graph'}">
             <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
               <i class="fas fa-bullseye opacity-10"></i>
             </div>
             <span class="nav-link-text ms-1">Visualisation des données</span>
+          </router-link>
+        </li>
+        <li class="nav-item">
+          <router-link class="nav-link text-white" :class="{'active bg-gradient-primary' : router.currentRoute.value.name == 'json'}" :to="{name : 'json'}">
+            <div class="text-white text-center me-2 d-flex align-items-center justify-content-center">
+              <i class="fas fa-code opacity-10"></i>
+            </div>
+            <span class="nav-link-text ms-1">Créer mon fichier Json</span>
           </router-link>
         </li>
         <!-- <li class="nav-item">
@@ -84,7 +95,11 @@
     </div>
     <div class="sidenav-footer position-absolute w-100 bottom-0 ">
       <div class="mx-3">
-        <a class="btn bg-gradient-primary w-100" href="/LoginView" type="button">Connectez-vous</a>
+        <router-link :to="{name : 'LoginView'}">
+          <button class="btn bg-gradient-white bg-white w-100 text-color">
+              Connectez-vous
+          </button>
+        </router-link>
       </div>
     </div>
   </aside>

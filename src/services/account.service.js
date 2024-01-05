@@ -2,8 +2,10 @@
 import Axios from "./caller.service"
 
 
-let login = (Credentials) => {
-    return Axios.post('/auth/loginView', Credentials)
+let login = (data) => {
+    Axios.post('auth/login', data).then((response) => {
+        console.log(response)
+    })
 }
 
 let logout = () => {

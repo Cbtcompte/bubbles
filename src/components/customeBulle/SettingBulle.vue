@@ -68,7 +68,7 @@ const changeTexteValue = (event, attribut) => {
                         <option value="#000000">Noir</option>
                         <option value="#4CAF50">Vert</option>
                         <option value="#7b809a">Grise</option>
-                        <option value="#1A73E8">Bleu claire</option>
+                        <option value="#1A73E8">Bleu clair</option>
                         <option value="#fb8c00">Orange</option>
                         <option value="#F44335">Rouge</option>
                     </select>

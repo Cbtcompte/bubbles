@@ -377,23 +377,23 @@ function debounce(func, wait, immediate) {
   };
 };
 
-// initialization of Toasts
+// initialization of toast2cbts
 document.addEventListener("DOMContentLoaded", function() {
-  var toastElList = [].slice.call(document.querySelectorAll(".toast"));
+  var toast2cbtElList = [].slice.call(document.querySelectorAll(".toast2cbt"));
 
-  var toastList = toastElList.map(function(toastEl) {
-    return new bootstrap.Toast(toastEl);
+  var toast2cbtList = toast2cbtElList.map(function(toast2cbtEl) {
+    return new bootstrap.toast2cbt(toast2cbtEl);
   });
 
-  var toastButtonList = [].slice.call(document.querySelectorAll(".toast-btn"));
+  var toast2cbtButtonList = [].slice.call(document.querySelectorAll(".toast2cbt-btn"));
 
-  toastButtonList.map(function(toastButtonEl) {
-    toastButtonEl.addEventListener("click", function() {
-      var toastToTrigger = document.getElementById(toastButtonEl.dataset.target);
+  toast2cbtButtonList.map(function(toast2cbtButtonEl) {
+    toast2cbtButtonEl.addEventListener("click", function() {
+      var toast2cbtToTrigger = document.getElementById(toast2cbtButtonEl.dataset.target);
 
-      if (toastToTrigger) {
-        var toast = bootstrap.Toast.getInstance(toastToTrigger);
-        toast.show();
+      if (toast2cbtToTrigger) {
+        var toast2cbt = bootstrap.toast2cbt.getInstance(toast2cbtToTrigger);
+        toast2cbt.show();
       }
     });
   });
