@@ -3,8 +3,31 @@ import Axios from "./caller.service"
 
 
 let login = (data) => {
-    Axios.post('auth/login', data).then((response) => {
-        console.log(response)
+    return new Promise((resolve, reject) => {
+        Axios.post('user/login', data).then((response) => {
+            if(response.status == 200){
+                resolve(response)
+            }else{
+                reject(response)
+            }
+        }).catch((error) => {
+            reject(error)
+        })
+    })
+}
+
+let register = (data) => {
+    return new Promise((resolve, reject) => {
+        Axios.post('user/register', data).then((response) => {
+            console.log(response)
+            if(response.status == 200){
+                resolve(response)
+            }else{
+                reject(response)
+            }
+        }).catch((error) => {
+            reject(error)
+        })
     })
 }
 
@@ -23,6 +46,7 @@ let isLogged = () => {
 
 export const accountService = {
     login,
+    register,
     logout,
     saveToken,
     isLogged

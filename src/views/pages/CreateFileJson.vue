@@ -1,7 +1,7 @@
 <script setup>
 import { ref } from 'vue'
 import Swal from 'sweetalert2'
-import { toastSuccess } from '@/assets/helpers/toastHelper.js'
+import { toastSuccess } from '@/helpers/toastHelper.js'
 
 
 const contenuFile = ref([
@@ -9,7 +9,7 @@ const contenuFile = ref([
         "id": 1,
         "data": "",
         "couleur": "",
-        "tailleBulle": "",
+        "tailleBubble": "",
         "tailleLabel": "",
         "fontFamily": "",
         "forme": "",
@@ -104,7 +104,7 @@ const addDataToFile = () => {
         "id": contenuFile.value.length + 1,
         "data": "",
         "couleur": "",
-        "tailleBulle": "",
+        "tailleBubble": "",
         "tailleLabel": "",
         "fontFamily": "",
         "forme": "",
@@ -185,7 +185,7 @@ const deleteToContenu = (key) => {
                             <div class="col-md-6 mb-2">
                                 <label for="">Taille des bulles </label>
                                 <div class="input-group input-group-outline">
-                                    <input type="number" v-model="item.tailleBulle" placeholder="Taille des bulles"
+                                    <input type="number" v-model="item.tailleBubble" placeholder="Taille des bulles"
                                         class="form-control">
                                 </div>
                             </div>
@@ -230,7 +230,7 @@ const deleteToContenu = (key) => {
                                 <label class="custom-control-label" for="customCheck1">Est un noeud parent ?</label>
 
                             </div>
-                            <div class="col-md-6 mb-2" v-if="item.isParent">
+                            <div class="col-md-6 mb-2">
                                 <label for="">Choisir l'ID du parent </label>
                                 <div class="input-group input-group-outline my-1">
                                     <select class="form-control" name="parent_id" id="" v-model="item.parent">
@@ -266,7 +266,7 @@ const deleteToContenu = (key) => {
                             </div>
                         </div>
                     </div>
-                    Visualisation du contenu de votre fichier. Ceci est fait au et à mesure de votre saisir
+                    Visualisation du contenu de votre fichier.
                 </div>
                 <div class="card-body">
                     <pre>

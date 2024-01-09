@@ -1,0 +1,23 @@
+// NB :Les sauts de ligne ne sont pas pris en compte, c'est pour faciliter la lisibilité
+
+[
+    {
+        "id": 1, // L'id
+
+        "data": "", // La data ou si vous voulez le libellé de la data (string)
+
+        "couleur": "", // Choisir la couleur dans cette liste ["#000080","#000000","#7b809a","#1A73E8","#4CAF50","#fb8c00","#F44335"] 
+
+        "tailleBulle": "", // Taille des bulles
+
+        "tailleLabel": "", // Taille du texte "data"
+
+        "fontFamily": "",  // Choisir la police dans cette liste ['sans-serif', 'serif', 'monospace']
+
+        "isParent": false, // true si c'est un noeud parent et false sinon
+
+        "forme": "", // Choisir la forme dans cette liste ['circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow', 'none']
+
+        "parent": 0 //Il s'agit de l'id du noeud parent
+    }
+]

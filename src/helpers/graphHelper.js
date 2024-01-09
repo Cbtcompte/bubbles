@@ -1,6 +1,6 @@
 import * as echarts from 'echarts'
 
-export const initGraphWithEvent = (idElement, data, edges, globalColor, saveDataInFile, eventInit) => {
+export const initGraphWithEvent = (idElement, data, edges, global, saveDataInFile, eventInit) => {
     try {
         const myChart = echarts.init(document.getElementById(idElement), null, {
             width: 'auto',
@@ -15,6 +15,7 @@ export const initGraphWithEvent = (idElement, data, edges, globalColor, saveData
             // animationEasingUpdate: 'quinticOutIn',
             series: [
                 {
+                    
                     type: 'graph',
                     layout: 'force',
                     draggable: true,
@@ -34,8 +35,8 @@ export const initGraphWithEvent = (idElement, data, edges, globalColor, saveData
                         show: true
                     },
                     itemStyle: {
-                        color: globalColor, //Générale
-                        borderColor: globalColor // Générale
+                        // color: global.value.globalColor, //Générale
+                        borderColor: global.value.globalColor
                     },
                     force: {
                         initLayout: 'circular',
@@ -74,10 +75,13 @@ export const initGraphWithEvent = (idElement, data, edges, globalColor, saveData
             }
             eventInit.value = false
         });
+
+        return myChart;
         
     }catch (error) {
         console.log('Un problème '+error)
     }
+
 }
 
 export const initGraphWithoutEvent = (idElement, data, edges, globalColor) => {
@@ -128,6 +132,50 @@ export const initGraphWithoutEvent = (idElement, data, edges, globalColor) => {
                 },
             ]
         });
+        
+    }catch (error) {
+        console.log('Un problème '+error)
+    }
+}
+
+
+export const initGraphSelect = (idElement, data, edges) => {
+    try {
+        const myChart = echarts.init(document.getElementById(idElement), null, {
+            width: 'auto',
+            height: '900',
+        })
+
+        myChart.setOption({
+            series: [
+                {
+                    type: 'graph',
+                    layout: 'force',
+                    draggable: true,
+                    data: data,
+                    // animation: false,
+                    roam: true,
+                    links: edges,
+                    edgeSymbol: ['circle', 'arrow'],
+                    edgeSymbolSize: [5, 10],
+                    lineStyle: {
+                        opacity: 0.9,
+                        width: 2,
+                        curveness: 0
+                    },
+                    label: {
+                        show: true
+                    },
+                    force: {
+                        initLayout: 'circular',
+                        repulsion: 100,
+                        edgeLength: 100,
+                    },
+                },
+            ]
+        });
+
+        return { myChart }
         
     }catch (error) {
         console.log('Un problème '+error)

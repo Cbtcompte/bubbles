@@ -11,8 +11,8 @@ export const useUserStore = defineStore('user', () => {
     await accountService.login(data)
   }
 
-  function register() {
-
+  async function register(data) {
+    user.value = await accountService.register(data)
   }
 
   function update() {

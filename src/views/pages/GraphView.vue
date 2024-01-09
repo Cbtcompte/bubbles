@@ -1,8 +1,7 @@
 <script setup>
-import * as echarts from 'echarts'
-
 import { storeToRefs } from 'pinia'
 import { useDataStore } from '@/stores/dataStore'
+import { useDiagrammeStore } from '@/stores/diagrammeStore'
 import { onMounted, ref, computed, watch } from 'vue';
 
 import SettingBulle from '@/components/customeBulle/SettingBulle.vue'
@@ -10,16 +9,19 @@ import ColorChoice from '@/components/customeBulle/ColorChoice.vue'
 import NotificationView from '@/components/tools/NotificationView.vue';
 import Swal from 'sweetalert2'
 
-import { toastSuccess, toastWarning, toastDanger } from '@/assets/helpers/toastHelper.js'
+import { toastSuccess } from '@/helpers/toastHelper.js'
+import { initGraphWithEvent, initGraphSelect } from '@/helpers/graphHelper.js'
+import { dataGraphH } from '@/helpers/dataGraphHelper.js'
+import { edgesH } from '@/helpers/edgesGraphHelper.js'
 import ModalFile from '@/views/partials/Modals/ModalFile.vue';
 import ModalBulle from '@/views/partials/Modals/ModalBulle.vue';
-
 
 /**
  * 
  * Variable 
  */
 const store = useDataStore()
+const diagrammeStore = useDiagrammeStore()
 const { dataBulle } = storeToRefs(store)
 
 const diagrammeName = ref('Diagramme à bulle')
@@ -30,15 +32,29 @@ const isActiveGraph = ref(true)
 
 const switchStyleEnfant = ref('translate3d(90%, 0px, 0px)')
 const switchStyleParent = ref('translate3d(5%, 0px, 0px)')
-const globalColor = ref('#000080')
-const globalSymbolParent = ref('diamond')
-const globalSymbolEnfant = ref('circle')
+const global = ref({
+    globalColor : '',
+    globalCouleurEnfant: '',
+    globalCouleurParent: '',
+    globalSymbolParent : 'diamond',
+    globalSymbolEnfant : 'circle'
+})
 
-const applyGlobalColor = ref(false)
+const apply = ref({
+    globalColor : false,
+    globalCouleurEnfant: false,
+    globalCouleurParent: false,
+    globalSymbolParent : false,
+    globalSymbolEnfant : false
+})
+
+const applyGlobalColor = ref(true)
 const initGraphBool = ref(false)
+const functionCall = ref(false)
 const eventInit = ref(true)
 
 const messageNotification = ref('')
+const myChart = ref('')
 const classNotification = ref('')
 const hasNotification = ref(false)
 
@@ -53,7 +69,7 @@ const saveDataInFile = ref([])
  * Watch
  */
 
-watch(dataGraph, (newDataGraph, oldDataGraph) => {
+watch(dataGraph, (o, n) => {
     if(!eventInit.value){
         initDomForGraph()
     }
@@ -120,6 +136,12 @@ const openModal = (idModal) => {
   $('#'+idModal).modal('show')
 }
 
+const openModal_2 = (idModal) => {
+    functionCall.value = true
+  // eslint-disable-next-line no-undef
+  $('#'+idModal).modal('show')
+}
+
  /**
   * Modification Global du Graph
   * 
@@ -127,19 +149,21 @@ const openModal = (idModal) => {
   */
 const modifierFormBulle = (parametre) => {
     if (switchTab.value == "parent") {
-        globalSymbolParent.value = parametre[0]
         dataGraph.value.map((item) => {
             if (item.isParent) {
                 item[parametre[1]] = parametre[0]
             }
         })
+        global.value.globalSymbolParent = parametre[0]
+        apply.value.globalSymbolParent = true
     } else {
-        globalSymbolEnfant.value = parametre[0]
         dataGraph.value.map((item) => {
             if (!item.isParent) {
                 item[parametre[1]] = parametre[0]
             }
         })
+        global.value.globalSymbolEnfant = parametre[0]
+        apply.value.globalSymbolEnfant = true
     }
     initDomForGraph()
 }
@@ -169,6 +193,9 @@ const modifierColorBulle = (parametre) => {
                 item.itemStyle.borderColor = parametre
             }
         })
+        global.value.globalCouleurParent = parametre
+        apply.value.globalCouleurParent = true
+        // console.log(global.value.globalCouleurParent)
     } else {
         dataGraph.value.map((item) => {
             if (!item.isParent) {
@@ -176,6 +203,8 @@ const modifierColorBulle = (parametre) => {
                 item.itemStyle.borderColor = parametre
             }
         })
+        global.value.globalCouleurEnfant = parametre
+        apply.value.globalCouleurEnfant = true
     }
     initDomForGraph()
 }
@@ -184,22 +213,32 @@ const choiceGlobalOrNot = (value) => {
     if (value == 'Non') {
         dataGraph.value.map((item) => {
             item['itemStyle'] = {
-                color: '#000080', //Générale
-                borderColor: '#000080' // Générale
+                color: item['itemStyle'].color, //Générale
+                borderColor: item['itemStyle'].borderColor // Générale
             }
         })
         applyGlobalColor.value = false
     } else {
         dataGraph.value.map((item) => {
-            item['itemStyle'] = null
+            item['itemStyle'] = {
+                color: global.value.globalColor, //Générale
+                borderColor:  global.value.globalColor // Générale
+            }
         })
         applyGlobalColor.value = true
-    }    
+    } 
+    initDomForGraph()   
 }
 
 const globalColorFunction = (color) => {
-    globalColor.value = color
-    initDomForGraph()
+    global.value.globalColor = color
+    global.value.globalCouleurEnfant = color
+    global.value.globalCouleurParent = color
+    apply.value.globalColor = true
+    apply.value.globalCouleurEnfant = true
+    apply.value.globalCouleurParent = true
+
+    initGraph()
 }
 
 
@@ -208,36 +247,46 @@ const globalColorFunction = (color) => {
  * 
  * @param {String} type 
  */
-const saveModificationInNewFile = (fileName, type) => {   
-    // Création d'un objet Blob
-    const blob = new Blob([JSON.stringify(transformDataToOriginalFile(saveDataInFile.value))], { type: type });
-
-    // Création d'un objet URL pour le Blob
-    const url = window.URL.createObjectURL(blob);
-
-    // Création d'un élément d'ancre pour le téléchargement
-    const a = document.createElement('a');
-    a.href = url;
-    switch (type) {
-        case 'application/json':
-            a.download = `${fileName}.json`;
-            break;
-        case 'text/plain':
-            a.download = `${fileName}.text`;
-            break;
-        default:
-            a.download = `${fileName}.png`;
-            break;
+const saveModificationInNewFile = (fileName, type, selectOrAll) => { 
+    const a = document.createElement('a'); 
+    let dataSave = ""; 
+    if(selectOrAll == "graph"){
+        dataSave = dataGraph.value
+    }else{
+        dataSave = saveDataInFile.value
     }
-
-    // Ajout de l'élément d'ancre à la page
-    document.body.appendChild(a);
-
-    // Simuler un clic sur l'élément d'ancre pour déclencher le téléchargement
-    a.click();
-
-    // Supprimer l'élément d'ancre après le téléchargement
-    document.body.removeChild(a);
+    if(type == 'application/json' || type == 'text/plain'){
+        const blob = new Blob([JSON.stringify(transformDataToOriginalFile(dataSave))], { type: type });
+        const url = window.URL.createObjectURL(blob);
+        a.href = url;
+        switch (type) {
+            case 'application/json':
+                a.download = `${fileName}.json`;
+                break;
+            default:
+                a.download = `${fileName}.text`;
+                break;
+            }
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+    }else{
+        const div = document.createElement('div');  
+        div.id = "selectGraph"
+        document.body.appendChild(div);
+        let myChartS = initGraphSelect("selectGraph", dataSave, edgesUse.value)
+        a.download = fileName + ".png";
+        a.href = myChartS["myChart"].getDataURL({
+            pixelRatio: 3,
+            backgroundColor: '#fff'
+        });
+        a.dataset.downloadurl = ["image/png", a.download, a.href].join(':');
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        document.body.removeChild(div);
+    }
+    
 }
 
 const transformDataToOriginalFile = (listGraphSave) => {
@@ -270,13 +319,15 @@ const openSweetAlert = (type) => {
         buttonsStyling: false
     }).fire({
         title: "Entrer le nom du fichier",
-        input: "text",
+        html : '<select class="swal2-select" id="swal-select"><option value="selection">Enregistrer une sélection</option><option value="graph">Enregistrer le diagramme</option></select>'+'<input type="text" placeholder="Entrer le nom dufichier" id="swal-text" class="swal2-input">',
         inputAttributes: {
             autocapitalize: "off"
         },
-        preConfirm : (fileName) => {
-            if(fileName.length != 0){
-                saveModificationInNewFile(fileName, type)
+        preConfirm : () => {
+            let selectOrAll = document.getElementById('swal-select').value
+            let fileName = document.getElementById('swal-text').value
+            if(fileName.length != 0 && selectOrAll.length != 0){
+                saveModificationInNewFile(fileName, type, selectOrAll)
             }else{
                 Swal.showValidationMessage("Ce champ ne doit pas être vide"); 
             }
@@ -291,149 +342,27 @@ const openSweetAlert = (type) => {
     });
 }
 
+
 /**
  * Création du graphe sur le dom
  * 
  */
 const visualisation = async () => {
-    dataGraph.value = []
-    idParentTab.value = []
-
-    store.dataBulle.forEach((element) => {
-        if(element.parent == element.id){
-            toastWarning("Une bulle ne peut pointer sur elle-même")
-        }
-        idParentTab.value.push((element.parent == element.id) ? null : element.parent)
-        dataGraph.value.push({
-            id: element.id,
-            name: element.data,
-            fixed: true,
-            symbol: (element.isParent) ? "diamond" : element.forme, // 'circle', 'rect', 'roundRect', 'triangle', 'diamond', 'pin', 'arrow', 'none'
-            symbolSize: element.tailleBubble, // [width, height]
-            visibility: true,
-            parent: (element.parent == element.id) ? null : element.parent,
-            isParent:  element.isParent,
-            label: {
-                show: true,
-                color: '#fff',
-                fontSize: element.tailleLabel,
-                fontFamily: element.fontFamily,
-                fontStyle: 'normal',
-                fontWeigth: 'normal'
-            },
-            itemStyle: {
-                color:  globalColor.value, //Générale
-                borderColor: globalColor.value // Générale
-            },
-        },)
-    })
+    let value = dataGraphH(store.dataBulle, global, apply, diagrammeStore)
+    dataGraph.value = value.dataGraphVa.value
+    idParentTab.value = value.idParentTab.value
 }
 
 const createLinkBettweenData = async () => {
-    edges.value = []
-    edgesUse.value = []
-    dataGraph.value.forEach(element => {
-        if (element.parent != null) {
-            edges.value.push({
-                source: element.parent-1,
-                target: element.id-1,
-                lineStyle: {
-                    type: 'dotted',
-                    width: 1,
-                }
-            });
-
-            edgesUse.value.push({
-                source: element.parent -1,
-                target: element.id-1,
-                lineStyle: {
-                    type: 'dotted',
-                    width: 1,
-                }
-            });
-        }
-    });
+    let value = edgesH(dataGraph.value)
+    edges.value = value.edges.value
+    edgesUse.value = value.edgesUse.value
 }
 
 const initDomForGraph = async () => {
     if(dataIsEmpty.value){
-        try {
-            const myChart = echarts.init(document.getElementById('chart-container'), null, {
-                width: 'auto',
-                height: '900',
-            })
-
-            // Option de visualisation
-            setInterval(() => {
-            }, 1000)
-            myChart.setOption({
-                // animationDurationUpdate: 3000,
-                // animationEasingUpdate: 'quinticOutIn',
-                series: [
-                    {
-                        type: 'graph',
-                        layout: 'force',
-                        draggable: true,
-                        data: computedDataGraph.value,
-                        // animation: false,
-                        roam: true,
-                        links: edgesUse.value,
-                        edgeSymbol: ['circle', 'arrow'],
-                        edgeSymbolSize: [5, 10],
-                        selectedMode: "multiple",
-                        lineStyle: {
-                            opacity: 0.9,
-                            width: 2,
-                            curveness: 0
-                        },
-                        label: {
-                            show: true
-                        },
-                        itemStyle: {
-                            color: globalColor.value, //Générale
-                            borderColor: globalColor.value // Générale
-                        },
-                        force: {
-                            initLayout: 'circular',
-                            repulsion: 300,
-                            edgeLength: 300,
-                        },
-                        edgeLabel: {
-                            fontSize: 20,
-                            // show : true
-                        },
-                        select: {
-                            itemStyle: {
-                                color: 'rgb(255,0,0)',
-                                borderColor: 'rgb(255,0,0)'
-                            },
-                            edgeLabel: {
-                                show: true
-                            }
-                        }
-                    },
-                ]
-            });
-
-            myChart.on('click', function (params) {
-                let countPresenceData = null
-                saveDataInFile.value.map((element) => {
-                    if(params.data.id == element.id){
-                        countPresenceData = element.id
-                    }
-                })
-
-                if(countPresenceData == null){
-                    saveDataInFile.value.push(params.data)
-                }else{
-                    saveDataInFile.value = saveDataInFile.value.filter((item) => item.id != countPresenceData)
-                }
-                eventInit.value = false
-            });
-            
-        }catch (error) {
-            console.log('Un problème '+error)
-        }
+       myChart.value = initGraphWithEvent('chart-container', dataGraph.value, edgesUse.value, global, saveDataInFile, eventInit)
+       console.log(myChart.value)
     }
 }
 
@@ -443,6 +372,7 @@ const initGraph = async () => {
       await createLinkBettweenData()
       await initDomForGraph()
     }
+    functionCall.value = false
 }
 
 
@@ -466,7 +396,11 @@ const initGraph = async () => {
 }
 
 const cacheAllChildGraph = (element, visibility) => {
-    console.log(element)
+    // console.log(element)
+    myChart.value.dispatchAction({
+        type: 'downplay',
+        dataIndex: [1, 2],
+    });
     // let boole = changeVisibility(element)
     // if (boole) {
     //     edgesUse.value = edges.value
@@ -501,16 +435,18 @@ const modifierBulleSpecifique = (key, item) => {
     if (item['id'] != item['parent']) {
         let idOldParent = idParentTab.value[key]
         let dataOfChildToOldParent = dataGraph.value.filter((val) => val.parent == idOldParent)
-
         if(dataOfChildToOldParent.length == 0){
             let parent = dataGraph.value.filter((value) => value.id == idOldParent)[0]
             parent.isParent = false
-            parent.symbol = globalSymbolEnfant
+            parent.symbol = global.value.globalSymbolEnfant
         }
         if(item['parent'] != ""){
             let parent = dataGraph.value.filter((value) => value.id == item['parent'])[0]
             parent.isParent = true
-            parent.symbol = globalSymbolParent
+            parent.symbol = global.value.globalSymbolParent
+            parent.itemStyle.color = global.value.globalCouleurParent
+            parent.itemStyle.borderColor = global.value.globalCouleurParent
+            parent.itemStyle.color = global.value.globalCouleurParent
         }
         dataGraph.value[key] = item
         idParentTab.value[key] = item['parent']
@@ -527,11 +463,11 @@ const addDataGraph = async (data) =>  {
     let val = {
         id : dataBulle.value.length+1,
         data : data.libelle,
-        couleur : "#41D55",
-        tailleBubble : 50,
+        couleur : (data.isParent) ? global.value.globalCouleurParent : global.value.globalCouleurEnfant,
+        tailleBubble : 80,
         tailleLabel : 15,
         fontFamily : "sans-serif",
-        forme : (data.isParent) ? "diamond" : "circle",
+        forme : (data.isParent) ? global.value.globalSymbolParent : global.value.globalSymbolEnfant,
         isParent : data.isParent,
         parent : data.parentId,
     }
@@ -539,7 +475,7 @@ const addDataGraph = async (data) =>  {
     store.addDataStore(val)
 
     if(!data.parentId || data.parentId != "#"){
-        store.updateFormeBulle(data.parentId)
+        store.updateFormeBulle(data.parentId, global.value.globalCouleurParent)
     }
 
     toastSuccess('La donnée à bien été ajouter')
@@ -593,6 +529,15 @@ const deleteData = (key, item) => {
  * 
  */
 onMounted(async () => {
+
+    if(diagrammeStore.diagrammeModel != undefined && diagrammeStore.diagrammeModel.length != 0){
+        global.value.globalColor = diagrammeStore.diagrammeModel.couleur
+        global.value.globalCouleurEnfant = diagrammeStore.diagrammeModel.couleur
+        global.value.globalCouleurParent = diagrammeStore.diagrammeModel.couleur
+        global.value.globalSymbolParent = diagrammeStore.diagrammeModel.formeParent
+        global.value.globalSymbolEnfant = diagrammeStore.diagrammeModel.formeEnfant
+    }
+
     await initGraph()
 })
 
@@ -602,14 +547,14 @@ onMounted(async () => {
     <div class="row">
         <div :class="[!dataIsEmpty ? 'col-lg-12 col-md-12 ' : 'col-lg-7 col-md-7']">
             <div class="row">
-                <h4 class="col-9">
+                <h4 :class="[dataIsEmpty ? 'col-6' : 'col-9']">
                     <i class="fas fa-bullseye"></i>
                     {{ computedNameDiagrame }}
                 </h4>
-                <!-- <button @click.prevent="openModal('modalFile')" class="btn btn-primary btn-sm col-3">
+                <button v-if="dataIsEmpty" @click.prevent="openModal_2('modalFile')" class="btn btn-primary btn-sm col-3">
                     <i class="fas fa-file-import" style="font-size: 12px;"></i>
                     Importer un fichier
-                </button> -->
+                </button>
                 <div class="col-3">
                     <div class="">
                         <button @click="changeActiveGraph(true)" class="col-6 btn btn-sm btn-outline-secondary btn-icon" :class="{'bg-primary text-white' : isActiveGraph}">
@@ -669,9 +614,9 @@ onMounted(async () => {
                         </div>          
                         <div class="col-lg-6 col-md-4" style="text-align: right;">
                             <div class="btn-group dropdown" >
-                                <button type="button" class="btn btn-sm btn-icon bg-gradient-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                <button type="button"  class="btn btn-sm btn-icon bg-gradient-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
                                     <i class="fas fa-file-export fs-6"></i>
-                                    Enregistrer une sélection
+                                    Enregistrer
                                 </button>
                                 <ul class="dropdown-menu px-2 py-3" aria-labelledby="dropdownMenuButton">
                                     <li><a class="dropdown-item border-radius-md" href="javascript:;" @click.prevent="openSweetAlert('text/plain')">Format texte (.txt)</a></li>
@@ -710,7 +655,7 @@ onMounted(async () => {
                                         </div>
                                         <a href="javascript:;" class="switch-trigger background-color">
                                             <color-choice @global-color-function="globalColorFunction"
-                                                :global="applyGlobalColor" :globalColor="globalColor"></color-choice>
+                                                :global="applyGlobalColor" :globalColor="global.globalColor"></color-choice>
                                         </a>
                                     </div>
 
@@ -718,12 +663,12 @@ onMounted(async () => {
                                 <div>
                                     <h6>Voulez-vous appliquer les couleurs de façon global ?</h6>
                                     <div>
-                                        <input id="non" type="radio" @click="choiceGlobalOrNot('Non')" checked
+                                        <input id="non" type="radio" @click="choiceGlobalOrNot('Non')" 
                                             class="form-radio" name="color" value="oui">
                                         <label for="non">Non</label>
                                     </div>
                                     <div>
-                                        <input id="oui" type="radio" @click="choiceGlobalOrNot('Oui')" class="form-radio"
+                                        <input id="oui" type="radio" @click="choiceGlobalOrNot('Oui')" checked class="form-radio" 
                                             name="color" value="oui">
                                         <label for="oui">Oui</label>
                                     </div>
@@ -776,9 +721,8 @@ onMounted(async () => {
                                             <h6 class="form-label text-bold">Couleur des bulles {{ (switchTab == "enfant") ? " enfants" : "" }}</h6>
                                         </div>
                                         <a href="javascript:void(0)" class="switch-trigger background-color">
-                                            <color-choice @modifier-color-bulle="modifierColorBulle"
-                                                @global-color-function="globalColorFunction" :global="applyGlobalColor"
-                                                :globalColor="globalColor"></color-choice>
+                                            <color-choice @modifier-color-bulle="modifierColorBulle" :global="applyGlobalColor"
+                                                :globalColor="global.globalColor"></color-choice>
                                         </a>
                                     </div>
                                 </template>
@@ -812,9 +756,9 @@ onMounted(async () => {
                                                 <th>ID</th>
                                                 <th>Libelle</th>
                                                 <th>Parent ID</th>
+                                                <!-- <th></th> -->
                                                 <th></th>
-                                                <th></th>
-                                                <th></th>
+                                                <!-- <th></th> -->
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -834,24 +778,24 @@ onMounted(async () => {
                                                         <input type="number" style="width: 50%;" :name="'parent_' + key"
                                                             id="parent" v-model="item.parent">
                                                     </td>
-                                                    <td>
+                                                    <!-- <td>
                                                         <button @click="cacheAllChildGraph(item, item.visibility)"
                                                             class="btn btn-sm btn-warning">
                                                             <i :class="[!item.visibility ? 'fa fa-eye' : 'fa fa-eye-slash']"></i>
                                                         </button>
-                                                    </td>
+                                                    </td> -->
                                                     <td>
                                                         <button @click="modifierBulleSpecifique(key, item)"
                                                             class="btn btn-sm btn-success">
                                                             <i class="fas fa-check"></i>
                                                         </button>
                                                     </td>
-                                                    <td>
+                                                    <!-- <td>
                                                         <button @click="deleteData(key, item)"
                                                             class="btn btn-sm btn-danger">
                                                             <i class="fas fa-trash"></i>
                                                         </button>
-                                                    </td>
+                                                    </td> -->
                                                 </tr>
                                             </template>
                                         </tbody>
@@ -864,7 +808,7 @@ onMounted(async () => {
             </div>
         </div>
     </div>
-    <modal-file @actualiser="modalFunctionInitGraph" modeToCall="graphFile" label-button="Afficher le graph" modal-title="Charger un fichier"></modal-file>
+    <modal-file :function-call="functionCall" @init="initGraph" @actualiser="modalFunctionInitGraph" modeToCall="graphFile" label-button="Afficher le graph" modal-title="Charger un fichier"></modal-file>
     <modal-bulle @ajouter-bulle="addDataGraph" label-button="Ajouter la donnée" modal-title="Ajouter une donnée"></modal-bulle>
 </template>
 

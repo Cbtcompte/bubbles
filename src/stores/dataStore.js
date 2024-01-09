@@ -14,11 +14,12 @@ export const useDataStore = defineStore('bulles', () => {
      dataBulle.value = value
   }
 
-  function updateFormeBulle(id) {
+  function updateFormeBulle(id, color) {
     let copie = [...dataBulle.value]
     copie.map((item) => {
         if(item.id == id){
           item.forme = "diamond"
+          item.couleur = color
         }
     })
   
