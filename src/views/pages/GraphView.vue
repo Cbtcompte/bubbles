@@ -362,7 +362,6 @@ const createLinkBettweenData = async () => {
 const initDomForGraph = async () => {
     if(dataIsEmpty.value){
        myChart.value = initGraphWithEvent('chart-container', dataGraph.value, edgesUse.value, global, saveDataInFile, eventInit)
-       console.log(myChart.value)
     }
 }
 
@@ -514,7 +513,6 @@ const deleteData = (key, item) => {
         cancelButtonText:  `<i class="fa fa-times"></i> Annuler!`,
         reverseButtons : true,
     }).then(async (result) => {
-        console.log(result.isConfirmed)
         if (result.isConfirmed) {
             dataGraph.value = dataGraph.value.filter((val) => val.id != item.id)
             // createLinkBettweenData()

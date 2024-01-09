@@ -149,7 +149,7 @@ onMounted(() => {
     $("#"+props.idModal).on('hidden.bs.modal', () => {
         dataFile.value = {}
         fileupload.value = null
-        console.log(fileupload.value)
+        //console.log(fileupload.value)
     })
 })
 
