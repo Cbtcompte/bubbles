@@ -1,6 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
-import { accountService } from '@/services/account.service.js'
+import localforage from 'localforage'
 
 export const useUserStore = defineStore('user', () => {
   const user = ref({})
@@ -8,11 +8,11 @@ export const useUserStore = defineStore('user', () => {
   const getUser = computed(() => user.value)
 
   async function login(data) {
-    await accountService.login(data)
+
   }
 
   async function register(data) {
-    user.value = await accountService.register(data)
+    
   }
 
   function update() {

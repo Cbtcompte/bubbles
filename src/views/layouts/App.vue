@@ -1,6 +1,5 @@
 <script setup>
     import NavigationView from '@/views/partials/NavigationView.vue';
-    import EnteteView from '@/views/partials/EnteteView.vue'
     // import FooterView from '@/views/partials/FooterView.vue'
 </script>
     
@@ -12,7 +11,7 @@
     <main class="main-content position-relative max-height-vh-100 h-100 border-radius-lg ">
       
       <!-- Entete breadcrumb -->
-      <entete-view></entete-view>
+      <!-- <entete-view></entete-view> -->
 
       <!-- Body content -->
       <div class="container-fluid py-4">

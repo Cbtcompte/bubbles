@@ -3,6 +3,7 @@ import { storeToRefs } from 'pinia'
 import { useDataStore } from '@/stores/dataStore'
 import { useDiagrammeStore } from '@/stores/diagrammeStore'
 import { onMounted, ref, computed, watch } from 'vue';
+import ButtonView from '@/components/tools/ButtonView.vue'
 
 import SettingBulle from '@/components/customeBulle/SettingBulle.vue'
 import ColorChoice from '@/components/customeBulle/ColorChoice.vue'
@@ -69,7 +70,7 @@ const saveDataInFile = ref([])
  * Watch
  */
 
-watch(dataGraph, (o, n) => {
+watch(dataGraph, () => {
     if(!eventInit.value){
         initDomForGraph()
     }
@@ -318,8 +319,8 @@ const openSweetAlert = (type) => {
         },
         buttonsStyling: false
     }).fire({
-        title: "Entrer le nom du fichier",
-        html : '<select class="swal2-select" id="swal-select"><option value="selection">Enregistrer une sélection</option><option value="graph">Enregistrer le diagramme</option></select>'+'<input type="text" placeholder="Entrer le nom dufichier" id="swal-text" class="swal2-input">',
+        title: "Information du supplémentaire",
+        html : '<select class="swal2-select" id="swal-select"><option value="selection">Enregistrer une sélection</option><option value="graph">Enregistrer le diagramme</option></select>'+'<input type="text" placeholder="Entrer le nom du fichier" id="swal-text" class="swal2-input">',
         inputAttributes: {
             autocapitalize: "off"
         },
@@ -375,61 +376,6 @@ const initGraph = async () => {
 }
 
 
-/**
- * Gestion du graph (ajout, modification et suppression)
- * 
- * @param {int} key 
- * @param {Object} item 
- */
-
- const changeVisibility = (element) => {
-    let resulte = true;
-    dataGraph.value.map((item) => {
-        if (item.id == element.id) {
-            item.visibility = !element.visibility
-            resulte = item.visibility
-        }
-    })
-
-    return resulte
-}
-
-const cacheAllChildGraph = (element, visibility) => {
-    // console.log(element)
-    myChart.value.dispatchAction({
-        type: 'downplay',
-        dataIndex: [1, 2],
-    });
-    // let boole = changeVisibility(element)
-    // if (boole) {
-    //     edgesUse.value = edges.value
-    //     //dataGraph.value = data.value
-    //     dataGraph.value.map((item, index) => {
-    //         // item.symbol = saveSymbol[index].symbol
-    //         // if (item.parent == element.id) {
-    //         //     // saveSymbol.value.push({
-    //         //     //     key : index,
-    //         //     //     symbol : item.symbol,
-    //         //     //     parent : item.parent
-    //         //     // })
-    //         //     item.symbol = 'none'
-    //         // }
-    //     })
-    // } else {
-    //     edgesUse.value = edges.value.filter(item => item.source !== (element.id - 1))
-    //     dataGraph.value.map((item, index) => {
-    //         if (item.parent == element.id) {
-    //             saveSymbol.value.push({
-    //                 key: index,
-    //                 symbol: item.symbol,
-    //                 parent: item.parent
-    //             })
-    //             item.symbol = 'none'
-    //         }
-    //     })
-    // }
-}
-
 const modifierBulleSpecifique = (key, item) => {   
     if (item['id'] != item['parent']) {
         let idOldParent = idParentTab.value[key]
@@ -482,45 +428,33 @@ const addDataGraph = async (data) =>  {
     await visualisation()
     await createLinkBettweenData()
     saveDataInFile.value = []
-    // Swal.fire({
-    //     title: "Rafraichir le graph",
-    //     text: "Pour pouvoir visualiser le nouveau graph, veuillez le rafraichir",
-    //     icon: "info",
-    //     backdrop : false,
-    //     confirmButtonText : `<i class="fa fa-refresh"></i> Actualiser!`
-    // }).then(async (result) => {
-    //     console.log(result.isConfirmed)
-    //     if (result.isConfirmed) {
-
-    //     }
-    // })
 }
 
-const deleteData = (key, item) => {
-    Swal.mixin({
-        customClass: {
-            confirmButton: "btn-sm btn-icon btn btn-danger ms-2",
-            cancelButton: "btn-sm btn-icon btn btn-primary"
-        },
-        buttonsStyling: false
-    }).fire({
-        title: "Suppression",
-        text: `Voulez-vous vraiment supprimer la donnée ${item.name}`,
-        icon: "question",
-        backdrop : true,
-        showCancelButton: true,
-        confirmButtonText : `<i class="fa fa-trash"></i> Supprimer!`,
-        cancelButtonText:  `<i class="fa fa-times"></i> Annuler!`,
-        reverseButtons : true,
-    }).then(async (result) => {
-        if (result.isConfirmed) {
-            dataGraph.value = dataGraph.value.filter((val) => val.id != item.id)
-            // createLinkBettweenData()
-            initDomForGraph()
-        }
-    })
+// const deleteData = (key, item) => {
+//     Swal.mixin({
+//         customClass: {
+//             confirmButton: "btn-sm btn-icon btn btn-danger ms-2",
+//             cancelButton: "btn-sm btn-icon btn btn-primary"
+//         },
+//         buttonsStyling: false
+//     }).fire({
+//         title: "Suppression",
+//         text: `Voulez-vous vraiment supprimer la donnée ${item.name}`,
+//         icon: "question",
+//         backdrop : true,
+//         showCancelButton: true,
+//         confirmButtonText : `<i class="fa fa-trash"></i> Supprimer!`,
+//         cancelButtonText:  `<i class="fa fa-times"></i> Annuler!`,
+//         reverseButtons : true,
+//     }).then(async (result) => {
+//         if (result.isConfirmed) {
+//             dataGraph.value = dataGraph.value.filter((val) => val.id != item.id)
+//             // createLinkBettweenData()
+//             initDomForGraph()
+//         }
+//     })
     
-}
+// }
 
 /**
  * Cycle de vie 
@@ -543,16 +477,15 @@ onMounted(async () => {
 
 <template>
     <div class="row">
-        <div :class="[!dataIsEmpty ? 'col-lg-12 col-md-12 ' : 'col-lg-7 col-md-7']">
+        <div :class="[!dataIsEmpty ? 'col-lg-12 col-md-12 ' : 'col-lg-8 col-md-8']">
             <div class="row">
                 <h4 :class="[dataIsEmpty ? 'col-6' : 'col-9']">
                     <i class="fas fa-bullseye"></i>
                     {{ computedNameDiagrame }}
                 </h4>
-                <button v-if="dataIsEmpty" @click.prevent="openModal_2('modalFile')" class="btn btn-primary btn-sm col-3">
-                    <i class="fas fa-file-import" style="font-size: 12px;"></i>
-                    Importer un fichier
-                </button>
+                <div v-if="dataIsEmpty" class="col-3">
+                    <button-view  @action="openModal_2" libelle="Importer un fichier" icon="fas fa-file-import" param="modalFile" classe="btn btn-primary btn-sm"></button-view>
+                </div>
                 <div class="col-3">
                     <div class="">
                         <button @click="changeActiveGraph(true)" class="col-6 btn btn-sm btn-outline-secondary btn-icon" :class="{'bg-primary text-white' : isActiveGraph}">
@@ -564,7 +497,7 @@ onMounted(async () => {
                     </div>
                 </div>
             </div>
-            <div class="border border-radius-xl bg-gray-200" :class="{'overflow-y-scroll' : !isActiveGraph}" style="height: 900px;">
+            <div class="border border-radius-xl bg-gray-200" :class="{'overflow-y-scroll' : !isActiveGraph}" style="height: 620px;">
                 <div id="" class="py-4">
                     <template v-if="dataIsEmpty">
                         <template v-if="computedActiveGraph">
@@ -590,24 +523,21 @@ onMounted(async () => {
                             <div class="py-5 mt-9" style="text-align: center;">
                                 <i class="fas fa-times-circle text-primary" style="font-size: 30px"></i>
                                 <h6 style="text-align: center;">Aucun fichier importé. Veuillez sélectionner un fichier</h6>
-                                <button @click.prevent="openModal('modalFile')" class="btn btn-primary btn-sm">
-                                    <i class="fas fa-file-import" style="font-size: 12px;"></i>
-                                    Importer le fichier
-                                </button>
+                                <button-view  @action="openModal" style="font-size: 12px;" libelle="Importer un fichier" icon="fas fa-file-import" param="modalFile" classe="btn btn-primary btn-sm"></button-view>
                             </div>
                         </div>
                     </template>
                 </div>
             </div>
         </div>
-        <div v-if="dataIsEmpty" class="col-lg-5 col-md-5">
+        <div v-if="dataIsEmpty" class="col-lg-4 col-md-4">
             <div class="card bg-gray-100" style="height: auto">
                 <div class="card-header" style="height: auto;">
                     <div class="d-flex">
                         <div class="col-lg-6 col-md-4">
                             <h6 class="mb-0 ">
                                 <i class="fas fa-cogs"></i>
-                                Configuration du diagramme
+                               Modification
                             </h6>
                         </div>          
                         <div class="col-lg-6 col-md-4" style="text-align: right;">
@@ -624,17 +554,16 @@ onMounted(async () => {
                             </div>
                         </div>
                     </div>
-                    Modifier votre diagramme
                 </div>
                
-                <div class="card-body overflow-y-scroll">
+                <div class="card-body overflow-y-scroll" style="height: 570px;">
                     <Transition name="slide-fade">
                         <div v-if="switchTabModif == 'general'">
                             <div class="row">
-                                <div class="col-6 col-xs-12">
+                                <div class="col-4 col-xs-12">
                                     <h6>Générale</h6>
                                 </div>
-                                <div class="col-6 col-xs-12" style="text-align: right;">
+                                <div class="col-8 col-xs-12" style="text-align: right;">
                                     <button @click.prevent="openModal('modalBulle')" class="btn btn-icon btn-sm btn-primary">
                                         <i class="fas fa-plus-circle fs-6"></i>
                                         Ajouter une donnée
@@ -674,10 +603,10 @@ onMounted(async () => {
                             </div>
                             <hr class="dark horizontal">
                             <div class="row">
-                                <div class="col-6 col-xs-12">
+                                <div class="col-3 col-xs-12">
                                     <h6>Bulles</h6>
                                 </div>
-                                <div class="col-6 col-xs-12" style="text-align: right;">
+                                <div class="col-9 col-xs-12" style="text-align: right;">
                                     <button @click.prevent="openPanelBulle('bulle')" class="btn btn-icon btn-sm btn-primary">
                                         <i class="fa fa-exchange fs-6"></i>
                                         Manipuler les bulles
@@ -732,15 +661,12 @@ onMounted(async () => {
                             <div>
                                 <div class="row">
                                     <div class="col-6 col-xs-12">
-                                        <button @click.prevent="openModal('modalBulle')" class="btn btn-icon btn-sm btn-primary">
-                                            <i class="fas fa-plus-circle fs-6"></i>
-                                            Ajouter une donnée
-                                        </button>
+                                        <button-view @action="openModal" libelle="Ajouter une donnée" icon="fas fa-plus-circle fs-6" param="modalBulle" classe="btn btn-icon btn-sm btn-primary">                                            
+                                        </button-view>
                                     </div>
                                     <div class="col-6 col-xs-12" style="text-align: right;">
-                                        <button @click.prevent="openPanelBulle('general')" class="btn btn-sm  btn-primary btn-icon-only">
-                                            <i class="fa fa-times-circle fs-6"></i>
-                                        </button>
+                                        <button-view @action="openPanelBulle" libelle="" param="general" icon="fa fa-times-circle fs-6" classe="btn btn-sm  btn-primary btn-icon-only">
+                                        </button-view>
                                     </div>
                                 </div>
                                 <div v-if="hasNotification">

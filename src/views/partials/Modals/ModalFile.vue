@@ -146,10 +146,10 @@ const displayDetails = () => {
 
 onMounted(() => {
     // eslint-disable-next-line no-undef
-    $("#"+props.idModal).on('hidden.bs.modal', () => {
+    $("#modalFile").on('hidden.bs.modal', () => {
         dataFile.value = {}
         fileupload.value = null
-        //console.log(fileupload.value)
+        console.log(fileupload.value)
     })
 })
 

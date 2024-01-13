@@ -4,7 +4,7 @@ export const initGraphWithEvent = (idElement, data, edges, global, saveDataInFil
     try {
         const myChart = echarts.init(document.getElementById(idElement), null, {
             width: 'auto',
-            height: '900',
+            height: '570',
         })
 
         // Option de visualisation
