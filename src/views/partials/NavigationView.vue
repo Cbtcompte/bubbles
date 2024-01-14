@@ -61,7 +61,7 @@ const router = useRouter()
         </li> -->
       </ul>
     </div>
-    <div class="sidenav-footer position-absolute w-100 bottom-0 ">
+    <!-- <div class="sidenav-footer position-absolute w-100 bottom-0 ">
       <div class="mx-3">
         <router-link :to="{name : 'LoginView'}">
           <button class="btn bg-gradient-white bg-white w-100 text-color">
@@ -69,6 +69,6 @@ const router = useRouter()
           </button>
         </router-link>
       </div>
-    </div>
+    </div> -->
   </aside>
 </template>
