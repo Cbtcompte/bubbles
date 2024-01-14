@@ -17,7 +17,7 @@ const executeFunction = () => {
 </script>
 
 <template>
-    <Teleport to='body'>
+    <Teleport to='#mode'>
         
         <div class="row">
             <div class="col-md-4">

@@ -1,0 +1,46 @@
+[
+    {
+        "id" : 1,
+        "data" : "data",
+        "couleur" : "#41D55",
+        "tailleBubble" : 80,
+        "tailleLabel" : 15,
+        "fontFamily" : "sans-serif",
+        "forme" : "diamond",
+        "isParent" : true,
+        "parent" : null
+    },
+    {
+        "id" : 2,
+        "data" : "fils 1",
+        "couleur" : "#41D55",
+        "tailleBubble" : 80,
+        "tailleLabel" : 15,
+        "fontFamily" : "sans-serif",
+        "forme" : "circle",
+        "isParent" : false,
+        "parent" : 1
+    },
+    {
+        "id" : 3,
+        "data" : "fils 2",
+        "couleur" : "#41D55",
+        "tailleBubble" : 80,
+        "tailleLabel" : 15,
+        "fontFamily" : "sans-serif",
+        "forme" : "circle",
+        "isParent" : false,
+        "parent" : 1
+    },
+    {
+        "id" : 4,
+        "data" : "fils 3",
+        "couleur" : "#41D55",
+        "tailleBubble" : 80,
+        "tailleLabel" : 15,
+        "fontFamily" : "sans-serif",
+        "forme" : "circle",
+        "isParent" : false,
+        "parent" : 1
+    }
+]
